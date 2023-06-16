@@ -1,0 +1,20 @@
+{
+  const iterator = list[Symbol.iterator]();
+  {
+    {
+      loop233444f4522775f6: {
+        const {
+          value: value,
+          done: done
+        } = iterator.next();
+        if (done) {} else {
+          const key = list;
+          key;
+          {
+            continue loop233444f4522775f6;
+          }
+        }
+      }
+    }
+  }
+}

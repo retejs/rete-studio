@@ -1,0 +1,5 @@
+a(1)
+
+function a(arg) {
+  return arg
+}

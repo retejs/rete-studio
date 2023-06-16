@@ -1,0 +1,1 @@
+const { b: aliasB, c } = a

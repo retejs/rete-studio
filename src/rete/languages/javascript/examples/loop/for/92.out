@@ -1,0 +1,13 @@
+{
+  loop71a2f0ad8b5a4c82: {
+    if (i < 0) {
+      i;
+      i++;
+      {
+        continue loop71a2f0ad8b5a4c82;
+      }
+    } else {
+      1;
+    }
+  }
+}

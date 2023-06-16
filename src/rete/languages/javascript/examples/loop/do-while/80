@@ -1,0 +1,8 @@
+0
+do {
+  1
+  if (true) break
+  else '1'
+  1
+} while(true)
+2

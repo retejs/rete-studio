@@ -1,0 +1,1 @@
+import { default as N, N2 } from "dep";

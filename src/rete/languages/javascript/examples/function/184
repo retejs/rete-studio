@@ -1,0 +1,3 @@
+(function a(arg) {
+  return arg
+})(1)

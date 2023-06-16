@@ -1,0 +1,5 @@
+const A = class A extends B {
+  test = function () {
+    super.test();
+  };
+};

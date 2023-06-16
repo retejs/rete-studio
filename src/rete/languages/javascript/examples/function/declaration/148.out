@@ -1,0 +1,4 @@
+const n = function (a, b, c) {
+  return a;
+};
+1;

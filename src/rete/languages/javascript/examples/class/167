@@ -1,0 +1,4 @@
+class A {
+  static B = 1
+  test() {}
+}

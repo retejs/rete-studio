@@ -1,0 +1,17 @@
+{
+  {
+    loopbc8879cf6047be1c: {
+      if (i < 0) {
+        i++;
+        if (true) {
+          continue loopbc8879cf6047be1c;
+        } else {
+          i++;
+          {
+            continue loopbc8879cf6047be1c;
+          }
+        }
+      }
+    }
+  }
+}

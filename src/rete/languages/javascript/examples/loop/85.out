@@ -1,0 +1,9 @@
+{
+  loop4f6fa5acc6c8f97d: {
+    if (i < 0) {
+      continue loop4f6fa5acc6c8f97d;
+    } else {
+      1;
+    }
+  }
+}

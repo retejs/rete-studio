@@ -1,0 +1,20 @@
+{
+  const iterator = list[Symbol.iterator]();
+  {
+    {
+      loopc07704e41f8f7b7a: {
+        const {
+          value: value,
+          done: done
+        } = iterator.next();
+        if (done) {} else {
+          const item = value;
+          item;
+          {
+            continue loopc07704e41f8f7b7a;
+          }
+        }
+      }
+    }
+  }
+}

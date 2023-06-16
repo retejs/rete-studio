@@ -1,0 +1,12 @@
+{
+  loop25177a802e0069a5: {
+    if (false) {
+      i;
+      {
+        continue loop25177a802e0069a5;
+      }
+    } else {
+      1;
+    }
+  }
+}

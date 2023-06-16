@@ -1,0 +1,12 @@
+0
+while(true) {
+  if ('true') {
+    1
+    break
+  }
+  else {
+    1
+    2
+  }
+}
+'1'

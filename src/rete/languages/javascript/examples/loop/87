@@ -1,0 +1,8 @@
+label1: if (i < 0) {
+  {
+    i++;
+    if (true) continue label1;
+  }
+  i++;
+  continue label1;
+}

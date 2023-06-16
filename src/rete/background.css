@@ -1,0 +1,23 @@
+.fill-area {
+  display: table;
+  z-index: -1;
+  position: absolute;
+  top: -320000px;
+  left: -320000px;
+  width: 640000px;
+  height: 640000px;
+}
+
+.background {
+  /* background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACABAMAAAAxEHz4AAAAG1BMVEUVFRUWFhYkJCQlJSUzMzMmJiY0NDQxMTEyMjIQl+acAAAAXklEQVR4AWKAA0HyAAOTkrIxCDiHQkAqifSgMWDUgFEDRg1g7wCCFhcgcEsjB4wGIqCdOhYAAAAAGORvPYw9CXQ2AQCADwAAgA8AAIAPAACADwAAgA8AAIAPfgAAAASSCCi35k/7bwAAAABJRU5ErkJggg==); */
+
+  background-color: #262626;
+  opacity: 1;
+  background-image:
+    linear-gradient(#0f0f0f 1.5px, transparent 1.5px),
+    linear-gradient(90deg, #0f0f0f 1.5px, transparent 1.5px),
+    linear-gradient(#333333 1.5px, transparent 1.5px),
+    linear-gradient(90deg, #333333 1.5px, #262626 1.5px);
+  background-size: 200px 200px, 200px 200px, 25px 25px, 25px 25px;
+  background-position: -1.5px -1.5px, -1.5px -1.5px, -1.5px -1.5px, -1.5px -1.5px;
+}

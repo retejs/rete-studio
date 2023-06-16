@@ -1,0 +1,16 @@
+{
+  let i = 0;
+  let n = 0;
+  {
+    loop17c5170ca1f62014: {
+      if (i < 0) {
+        i++;
+        {
+          continue loop17c5170ca1f62014;
+        }
+      } else {
+        1;
+      }
+    }
+  }
+}

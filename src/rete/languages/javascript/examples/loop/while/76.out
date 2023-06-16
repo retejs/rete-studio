@@ -1,0 +1,19 @@
+0;
+{
+  {
+    loopd4bc5a226f23d2e8: {
+      if (true) {
+        if (true) {
+          continue loopd4bc5a226f23d2e8;
+        } else {
+          2;
+          {
+            continue loopd4bc5a226f23d2e8;
+          }
+        }
+      } else {
+        3;
+      }
+    }
+  }
+}

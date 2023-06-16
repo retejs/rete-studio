@@ -1,0 +1,17 @@
+{
+  let i = 0;
+  let n = 0;
+  {
+    loop55d0283e2fc522e1: {
+      if (i < 0) {
+        n = 1 * i;
+        i++;
+        {
+          continue loop55d0283e2fc522e1;
+        }
+      } else {
+        1;
+      }
+    }
+  }
+}

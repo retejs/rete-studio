@@ -1,0 +1,4 @@
+function f(arg1, arg2 = arg1) {
+  return arg2
+}
+1

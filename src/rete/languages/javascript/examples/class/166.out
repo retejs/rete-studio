@@ -1,0 +1,11 @@
+const A = class A {
+  test = function () {
+    this.a;
+  };
+  a = 1;
+  b = this.a;
+  constructor(a, b) {
+    a;
+    b;
+  }
+};

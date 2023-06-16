@@ -1,0 +1,7 @@
+switch (n) {
+  case 1: {
+    1
+  }
+  case 2: 2
+  default: 3
+}

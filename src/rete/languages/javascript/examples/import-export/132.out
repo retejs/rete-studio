@@ -1,0 +1,2 @@
+import * as N from "dep";
+N;

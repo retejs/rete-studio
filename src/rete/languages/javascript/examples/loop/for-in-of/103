@@ -1,0 +1,3 @@
+for ({ a, b } of list) {
+  a
+}

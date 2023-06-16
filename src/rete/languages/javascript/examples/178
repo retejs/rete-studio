@@ -1,0 +1,10 @@
+label1: {
+  label2: {
+    1
+    if (true) break label1
+    2
+  }
+  if (true) break label1
+  3
+}
+4

@@ -1,0 +1,7 @@
+const {
+  a,
+  b: {
+    c
+  }
+} = n;
+export { a, c };

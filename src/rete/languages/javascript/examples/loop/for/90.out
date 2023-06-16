@@ -1,0 +1,14 @@
+let i = 0;
+{
+  loopb3f1fd3206476b67: {
+    if (i < 0) {
+      i;
+      i++;
+      {
+        continue loopb3f1fd3206476b67;
+      }
+    } else {
+      1;
+    }
+  }
+}

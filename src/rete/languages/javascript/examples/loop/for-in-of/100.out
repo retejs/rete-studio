@@ -1,0 +1,25 @@
+1;
+{
+  const iterator = list[Symbol.iterator]();
+  {
+    {
+      loop3d8452b26a31eeab: {
+        const {
+          value: value,
+          done: done
+        } = iterator.next();
+        if (done) {} else {
+          const key = list;
+          1;
+          if (true) {} else {
+            2;
+            {
+              continue loop3d8452b26a31eeab;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+3;

@@ -1,0 +1,1 @@
+function a1(arg) { return a(arg) }

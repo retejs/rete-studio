@@ -1,0 +1,4 @@
+var a = function a() {
+  var b = function b() {};
+};
+export { a };

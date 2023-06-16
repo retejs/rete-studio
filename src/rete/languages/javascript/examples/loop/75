@@ -1,0 +1,12 @@
+0;
+loopa825d183b5e64144: if (true) {
+  if ('true') {
+    1;
+    break loopa825d183b5e64144;
+  } else {
+    1;
+    2;
+    continue loopa825d183b5e64144;
+  }
+}
+'1';

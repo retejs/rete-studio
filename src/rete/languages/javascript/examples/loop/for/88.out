@@ -1,0 +1,18 @@
+const i = 5;
+{
+  let i = 0;
+  let n = 0;
+  {
+    loop578dfd6a765028f8: {
+      if (i < 0) {
+        i;
+        i++;
+        {
+          continue loop578dfd6a765028f8;
+        }
+      } else {
+        1;
+      }
+    }
+  }
+}

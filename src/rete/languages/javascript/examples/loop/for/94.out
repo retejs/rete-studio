@@ -1,0 +1,16 @@
+{
+  loop7f19bd0c8ce11bc3: {
+    if (false) {
+      "1";
+      if (true) {
+        break loop7f19bd0c8ce11bc3;
+      } else {
+        1;
+        {
+          continue loop7f19bd0c8ce11bc3;
+        }
+      }
+    }
+  }
+}
+1;

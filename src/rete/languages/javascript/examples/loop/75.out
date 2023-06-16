@@ -1,0 +1,20 @@
+0;
+{
+  loop7ec8a1f92152f7e9: {
+    if (true) {
+      if ("true") {
+        1;
+        {
+          break loop7ec8a1f92152f7e9;
+        }
+      } else {
+        1;
+        2;
+        {
+          continue loop7ec8a1f92152f7e9;
+        }
+      }
+    }
+  }
+}
+"1";

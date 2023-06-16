@@ -1,0 +1,5 @@
+class A {
+  test = function test(arg) {
+    return arg
+  }
+}

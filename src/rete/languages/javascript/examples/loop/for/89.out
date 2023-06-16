@@ -1,0 +1,14 @@
+i = 0;
+{
+  loop6c180cdababf796a: {
+    if (i < 0) {
+      i;
+      i++;
+      {
+        continue loop6c180cdababf796a;
+      }
+    } else {
+      1;
+    }
+  }
+}

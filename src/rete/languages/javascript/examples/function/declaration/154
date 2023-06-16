@@ -1,0 +1,4 @@
+async function f() {
+  await f()
+}
+1

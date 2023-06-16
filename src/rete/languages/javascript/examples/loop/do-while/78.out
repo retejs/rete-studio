@@ -1,0 +1,14 @@
+0;
+{
+  loop7d278d0eae84f4fc: {
+    1;
+    if (true) {
+      continue loop7d278d0eae84f4fc;
+    } else {
+      break loop7d278d0eae84f4fc;
+    }
+  }
+}
+{
+  2;
+}

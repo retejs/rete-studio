@@ -1,0 +1,8 @@
+const a = class A {
+  constructor(arg) {
+    arg
+  }
+  test() {
+    return 1
+  }
+}

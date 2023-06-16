@@ -1,0 +1,4 @@
+var a = function a(arg) {
+  return arg;
+};
+a(1);

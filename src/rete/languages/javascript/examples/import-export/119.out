@@ -1,0 +1,3 @@
+export default (function () {
+  var b = function b() {};
+});

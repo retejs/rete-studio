@@ -1,0 +1,11 @@
+class A {
+  a = 1
+  b = this.a
+  constructor(a, b) {
+    a
+    b
+  }
+  test() {
+    this.a
+  }
+}

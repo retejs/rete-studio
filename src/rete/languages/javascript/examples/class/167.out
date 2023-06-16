@@ -1,0 +1,4 @@
+const A = class A {
+  test = function () {};
+  static B = 1;
+};

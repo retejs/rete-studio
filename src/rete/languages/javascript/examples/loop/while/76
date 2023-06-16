@@ -1,0 +1,6 @@
+0
+while(true) {
+  if (true) continue
+  2
+}
+3

@@ -1,0 +1,13 @@
+{
+  loopbd97d44669c0c79f: {
+    if (true) {
+      1;
+      1.5;
+      {
+        continue loopbd97d44669c0c79f;
+      }
+    } else {
+      2;
+    }
+  }
+}

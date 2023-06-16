@@ -1,0 +1,6 @@
+label1: {
+  1
+  if (true) break label1
+  2
+}
+3

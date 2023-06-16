@@ -1,0 +1,5 @@
+const A = class A {
+  test = function (arg) {
+    return arg;
+  };
+};

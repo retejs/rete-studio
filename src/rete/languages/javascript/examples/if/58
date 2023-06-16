@@ -1,0 +1,6 @@
+if (true) {
+  const i = 1
+} else {
+  const i = 2
+}
+3

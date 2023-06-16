@@ -1,0 +1,15 @@
+0;
+{
+  loopab190b6c408e2b81: {
+    if (true) {
+      1;
+      1;
+      if (true) {
+        continue loopab190b6c408e2b81;
+      } else {
+        break loopab190b6c408e2b81;
+      }
+    }
+  }
+}
+2;

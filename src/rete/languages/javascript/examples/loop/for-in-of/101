@@ -1,0 +1,4 @@
+var list
+for (const item of list) {
+  item
+}

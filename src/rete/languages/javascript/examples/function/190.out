@@ -1,0 +1,3 @@
+var a1 = function a1(arg) {
+  return a(arg);
+};
