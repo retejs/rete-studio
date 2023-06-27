@@ -18,3 +18,5 @@ export const tokens: ThemeConfig['token'] = {
   colorSplit: 'transparent',
   fontFamily: 'Montserrat, sans-serif'
 }
+
+export const transparentBgBase = tokens.colorBgBase + '85';

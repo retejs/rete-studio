@@ -5,7 +5,7 @@ import styled from 'styled-components'
 import { EnvContext } from './main'
 import { languages } from './rete/languages/list'
 import { Logo } from './shared/Logo'
-import { tokens } from './theme'
+import { tokens, transparentBgBase } from './theme'
 import { DiscordIcon } from './shared/DiscordIcon'
 import { GithubOutlined, TwitterOutlined } from '@ant-design/icons'
 import { social } from './consts'
@@ -20,12 +20,13 @@ const Container = styled.div`
   padding: 1em;
   padding-top: 1em;
   position: sticky;
-  background: ${tokens?.colorBgBase};
+  background: ${transparentBgBase};
   top: 0;
   backdrop-filter: blur(10px);
   max-width: 100%;
   overflow: hidden;
   margin-bottom: -0.7em;
+  z-index: 5;
   .title {
     margin-left: 0.5em;
     margin-right: 1em;
