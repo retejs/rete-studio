@@ -7,8 +7,6 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "vite.config.ts",
-    "src/theme.ts",
-    "src/rete/languages/javascript/tests/utils.ts"
+    "vite.config.ts"
   ]
 }

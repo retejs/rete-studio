@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+// @ts-ignore
 import { loadExamples } from './src/rete/languages/javascript/tests/utils'
 import { VitePluginRadar } from 'vite-plugin-radar'
 import htmlPlugin from 'vite-plugin-html-config'
+// @ts-ignore
 import { tokens } from './src/theme'
 
 const title = 'Rete Studio - Code generation tool powered by Rete.js'
