@@ -52,6 +52,16 @@ const MainLink = styled(Link)`
   }
 `
 
+const ExternalLink = styled(Link)`
+  color: ${tokens?.colorPrimaryHover} !important;
+  height: 100%;
+  font-weight: 400;
+  white-space: nowrap;
+  :hover {
+    color: ${tokens?.colorPrimary} !important;
+  }
+`
+
 const Social = styled.div`
   display: flex;
   gap: 0.5em;
@@ -91,6 +101,10 @@ export function Header() {
       {
         label: <MainLink to="/editor">Editor</MainLink>,
         key: '/editor'
+      },
+      {
+        label: <ExternalLink to="https://retejs.org/sponsor" target='_blank'>Sponsor</ExternalLink>,
+        key: 'sponsor'
       }
     ]
 

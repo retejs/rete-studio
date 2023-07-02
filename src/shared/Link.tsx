@@ -13,7 +13,7 @@ export function includeLanguage(path: string, lang?: string) {
   return path + (lang && `?language=${lang}`)
 }
 
-export function Link(props: { to: string, children: React.ReactNode }) {
+export function Link(props: { to: string, target?: string, children: React.ReactNode }) {
   const env = useContext(EnvContext)
 
   return (
