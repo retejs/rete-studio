@@ -1,4 +1,4 @@
-import { Presets } from 'rete-react-render-plugin';
+import { Presets } from 'rete-react-plugin';
 import styled, { css } from "styled-components";
 import { contextMenuToken } from './theme';
 

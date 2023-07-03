@@ -1,4 +1,4 @@
-import { RenderEmit, Presets } from 'rete-react-render-plugin'
+import { RenderEmit, Presets } from 'rete-react-plugin'
 import styled from 'styled-components'
 import { Schemes } from '../types'
 

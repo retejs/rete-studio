@@ -1,5 +1,5 @@
 import { css } from 'styled-components'
-import { Presets as ReactPresets, Drag } from 'rete-react-render-plugin'
+import { Presets as ReactPresets, Drag } from 'rete-react-plugin'
 import { Node, selectedShadow } from './custom-node'
 import { InputControl, InputType, InsertControl, SelectControl, inputTypes } from '../nodes'
 import { useEffect, useState } from 'react'

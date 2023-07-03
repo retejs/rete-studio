@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import { CodeFilled, LayoutFilled } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
 import styled from 'styled-components'
-import { useRete } from 'rete-react-render-plugin';
+import { useRete } from 'rete-react-plugin';
 import { createEditor } from '../rete'
 import { getLanguage } from '../rete/languages'
 import { EnvContext } from '../main';

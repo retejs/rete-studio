@@ -2,7 +2,7 @@ import { NodeEditor } from 'rete'
 import { createRoot } from 'react-dom/client'
 import { AreaPlugin, AreaExtensions } from 'rete-area-plugin'
 import { ConnectionPlugin, Presets as ConnectionPresets } from 'rete-connection-plugin'
-import { ReactArea2D, ReactRenderPlugin, Presets as ReactPresets } from 'rete-react-render-plugin'
+import { ReactArea2D, ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin'
 import { ContextMenuPlugin, ContextMenuExtra } from 'rete-context-menu-plugin'
 import { ArrangeAppliers, AutoArrangePlugin, Presets as ArrangePresets } from 'rete-auto-arrange-plugin'
 import { ScopesPlugin, Presets as ScopePresets } from 'rete-scopes-plugin'
@@ -31,7 +31,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
   const editor = new NodeEditor<Schemes>()
   const area = new AreaPlugin<Schemes, AreaExtra>(container)
   const connection = new ConnectionPlugin<Schemes, AreaExtra>()
-  const reactPlugin = new ReactRenderPlugin<Schemes, AreaExtra>({ createRoot })
+  const reactPlugin = new ReactPlugin<Schemes, AreaExtra>({ createRoot })
   const contextMenu = new ContextMenuPlugin<Schemes>({
     items: contextMenuItems(language.snippets, async code => {
       const tempEditor = new NodeEditor<Schemes>()

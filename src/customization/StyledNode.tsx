@@ -1,4 +1,4 @@
-import { Presets } from "rete-react-render-plugin";
+import { Presets } from "rete-react-plugin";
 import { css } from "styled-components";
 
 const styles = css<{ selected?: boolean }>`
