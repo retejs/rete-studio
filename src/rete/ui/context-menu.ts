@@ -33,5 +33,4 @@ export const Search = styled(Presets.contextMenu.Search)`
 `
 
 export const Subitems = styled(Presets.contextMenu.Subitems)`
-  ${base}
 `

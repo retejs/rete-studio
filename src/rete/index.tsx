@@ -180,7 +180,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
     }
   }))
   reactPlugin.addPreset(ReactPresets.contextMenu.setup({
-    delay: 29000,
+    delay: 200,
     customize: {
       main: () => UI.ContextMenu.Menu,
       item: () => UI.ContextMenu.Item,
