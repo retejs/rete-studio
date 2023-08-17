@@ -17,6 +17,7 @@ import { CodeError } from './shared/Alert';
 import { EnvContext } from './main';
 import { getLanguage } from './rete/languages';
 import { flatExamples, File, Folder } from './rete/languages/utils';
+import { CopyCode } from './shared/CopyCode';
 
 const { CheckableTag } = Tag;
 
@@ -185,6 +186,7 @@ export default function Lab() {
           }}
           onMount={diffEditorSync.onMount}
         />
+        <CopyCode value={editor.executableCode || ''} />
         {editor.codeToGraph.status && <CodeError message={editor.codeToGraph.status?.message} placement="left" />}
         {editor.graphToCode.status && <CodeError message={editor.graphToCode.status?.message} placement="right" />}
       </Editor>

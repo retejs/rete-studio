@@ -9,6 +9,7 @@ import { useEditor } from './shared/Editor';
 import { CodeError } from './shared/Alert';
 import { EnvContext } from './main';
 import { getLanguage } from './rete/languages';
+import { CopyCode } from './shared/CopyCode';
 
 const Layout = styled.div`
   display: grid;
@@ -94,6 +95,7 @@ export default function Playground() {
           value={editor.code}
           options={{ readOnly: true, ...options }}
         />
+        <CopyCode value={editor.executableCode || ''} />
         {editor.graphToCode.status && <CodeError message={editor.graphToCode.status?.message} placement="right" />}
       </Result>
       <Canvas>

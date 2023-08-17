@@ -393,6 +393,11 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
 
       return generatedCode
     },
+    toExecutable(code: string) {
+      const ast = astTools.purify(astTools.parse(code))
+
+      return astTools.generate(astTools.executable(ast))
+    },
     clear: () => editor.clear(),
     destroy: () => area.destroy()
   }

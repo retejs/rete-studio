@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { CodeFilled, LayoutFilled } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
 import styled from 'styled-components'
@@ -58,6 +58,7 @@ export function useEditor(props: { code: string | undefined, autoCode?: boolean 
   }, [createEditor, env?.current])
   const [ref, editor] = useRete(create)
   const [code, setCode] = useState<string | undefined>()
+  const executableCode = useMemo(() => code && editor?.toExecutable(code), [code, editor])
   const codeToGraph = useTask({
     async execute() {
       if (!editor || !props.code) return
@@ -96,6 +97,7 @@ export function useEditor(props: { code: string | undefined, autoCode?: boolean 
     codeToGraph,
     graphToCode,
     code,
+    executableCode,
     maxStep: editor?.maxStep,
     stepNames: editor?.stepNames || [],
     getCurrentStep: () => editor?.getCurrentStep() ?? -1,
