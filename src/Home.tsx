@@ -160,7 +160,7 @@ export default function Home() {
       <Top title='Rete Studio' description='A general-purpose code generation tool powered by Rete.js' />
       <List>
         <div className='star'>
-          <iframe src={gitHubBadge} width="120px" height="30px"></iframe>
+          <iframe src={gitHubBadge} width="130px" height="30px"></iframe>
         </div>
         <a className='origin' href="https://stand-with-ukraine.pp.ua" target="_blank">
           <img src={originBadge} alt="Stand with Ukraine" />
