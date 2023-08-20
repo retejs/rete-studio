@@ -1,133 +1,10 @@
 import * as BabelType from '@babel/types'
 import * as t from '@babel/types'
-// import { parse, ParserOptions } from '@babel/parser'
-// import generate from '@babel/generator'
-import traverse, { Scope as TraverseScope, NodePath } from '@babel/traverse'
+import traverse, { Scope as TraverseScope } from '@babel/traverse'
 import { getIdentifiers } from './utils'
-import { getUID } from 'rete'
-
-
-const scopeHoisingIndex = new WeakMap()
-
-function hoise(scopable: BabelType.Scopable, declaration: BabelType.Declaration) {
-  const parentBody = getScopableBody(scopable)
-  const index = scopeHoisingIndex.get(parentBody) || 0
-
-  parentBody.splice(index, 0, declaration)
-  scopeHoisingIndex.set(parentBody, index + 1)
-}
-
-function getScopableBody(scopable: BabelType.Scopable) {
-  if (BabelType.isSwitchStatement(scopable)) throw new Error('scope does not have body')
-  if (!Array.isArray(scopable.body)) throw new Error('not implemented for non-array body')
-
-  return scopable.body
-}
-
-
-function declarationToVariable(declaration: BabelType.Declaration, parentScope: TraverseScope) {
-  if (BabelType.isVariableDeclaration(declaration)) {
-    return declaration
-  }
-  if (BabelType.isFunctionDeclaration(declaration)) {
-    if (!declaration.id) throw new Error('function declaration should have id')
-
-    return BabelType.variableDeclaration('var', [
-      BabelType.variableDeclarator(declaration.id, declarationToExpression(declaration, parentScope))
-    ])
-  }
-  if (BabelType.isClassDeclaration(declaration)) {
-    return BabelType.variableDeclaration('const', [
-      BabelType.variableDeclarator(declaration.id, declarationToExpression(declaration, parentScope))
-    ])
-  }
-  throw new Error('unknown declaration type')
-}
-
-function declarationToExpression(declaration: BabelType.Declaration, parentScope: TraverseScope) {
-  if (BabelType.isFunctionDeclaration(declaration)) {
-    const { id, params, body, generator, async } = declaration
-
-    applyAstTransformations(body, parentScope)
-
-    return BabelType.functionExpression(id, params, body, generator, async)
-  }
-  if (BabelType.isClassDeclaration(declaration)) {
-    applyAstTransformations(declaration, parentScope)
-
-    const { id, superClass, body, decorators } = declaration
-
-    return BabelType.classExpression(id, superClass, body, decorators)
-  }
-  throw new Error('unknown declaration type')
-}
-
-function prepend(parent: BabelType.Scopable, node: BabelType.Statement, nextSibling: BabelType.Statement) {
-  const body = getScopableBody(parent)
-
-  const exportIndex = body.indexOf(nextSibling)
-
-  if (exportIndex < 0) throw new Error('exportIndex is negative')
-
-  body.splice(exportIndex, 0, node)
-}
-
-function createLoop(path: NodePath<BabelType.Statement>) {
-  const id = path.parentPath.isLabeledStatement() ? path.parentPath.node.label : t.identifier('loop' + getUID())
-
-  if (path.parentPath.isLabeledStatement()) {
-    path.parentPath.node.label = t.identifier('old' + getUID())
-  }
-
-  return {
-    id,
-    statement: t.labeledStatement(id, t.emptyStatement()),
-    patchContinue(body: BabelType.Statement, pregoto?: BabelType.Statement | null) {
-      traverse(body, {
-        enter(path) {
-          if (path.isCompletionStatement()) {
-            path.skip()
-          }
-          if (path.isContinueStatement()) {
-            if (!path.node.label || path.node.label.name === id.name) {
-              const n = t.continueStatement(id)
-              path.replaceWith(t.blockStatement(pregoto ? [pregoto, n] : [n]))
-              path.skip()
-            }
-          }
-        }
-      }, path.scope)
-    }
-  }
-}
-
-function loopToGoto(path: NodePath<BabelType.WhileStatement | BabelType.ForStatement>, pregoto?: BabelType.Statement | null) {
-  const { test, body } = path.node;
-  const { id, statement, patchContinue } = createLoop(path)
-  const block = t.blockStatement([])
-
-  const ifStatement = t.ifStatement(test || t.booleanLiteral(true), block)
-
-  statement.body = ifStatement
-
-  patchContinue(body, pregoto)
-
-  if (t.isBlockStatement(body)) {
-    block.body.push(...body.body);
-  } else {
-    block.body.push(body)
-  }
-  if (pregoto) {
-    block.body.push(pregoto)
-  }
-  block.body.push(t.continueStatement(id))
-
-  return {
-    statement,
-    id,
-    body: block
-  }
-}
+import { hoise, prepend } from './scope'
+import { declarationToExpression, declarationToVariable } from './declarations'
+import { createLoop, loopToGoto } from './loop'
 
 export function makePurifiedExecutable<T extends BabelType.Node>(node: T, scope?: TraverseScope): T {
   traverse(node, {
@@ -273,7 +150,7 @@ export function applyAstTransformations<T extends BabelType.Node>(node: T, scope
 
         path.node.declaration = null
 
-        const varDeclaration = declarationToVariable(declaration, path.parentPath.scope)
+        const varDeclaration = declarationToVariable(declaration, applyAstTransformations, path.parentPath.scope)
 
         prepend(path.parent, varDeclaration, path.node)
 
@@ -285,20 +162,20 @@ export function applyAstTransformations<T extends BabelType.Node>(node: T, scope
       } else if (path.isExportDefaultDeclaration() && path.node.declaration) {
 
         if (BabelType.isDeclaration(path.node.declaration)) {
-          path.node.declaration = declarationToExpression(path.node.declaration, path.parentPath.scope)
+          path.node.declaration = declarationToExpression(path.node.declaration, applyAstTransformations, path.parentPath.scope)
         }
       } else if (path.isImportDefaultSpecifier()) {
         path.replaceWith(BabelType.importSpecifier(path.node.local, BabelType.identifier('default')))
       } else if (path.isFunctionDeclaration()) {
         if (path.node.id && ('body' in path.parent)) {
-          const variable = declarationToVariable(path.node, path.parentPath.scope)
+          const variable = declarationToVariable(path.node, applyAstTransformations, path.parentPath.scope)
           path.remove()
 
           if (!BabelType.isScopable(path.parent)) throw new Error('parent is not scopable')
           hoise(path.parent, variable)
         }
       } else if (path.isClassDeclaration()) {
-        path.replaceWith(declarationToVariable(path.node, path.parentPath.scope))
+        path.replaceWith(declarationToVariable(path.node, applyAstTransformations, path.parentPath.scope))
       } else if (path.isObjectMethod()) {
         const { params, body, generator, async } = path.node
         const functionExpression = BabelType.functionExpression(null, params, body, generator, async)

@@ -3,7 +3,7 @@ import * as BabelType from '@babel/types'
 export function getIdentifiers(v: BabelType.LVal) {
   const ids: BabelType.Identifier[] = []
 
-  if(BabelType.isIdentifier(v)) {
+  if (BabelType.isIdentifier(v)) {
     ids.push(v)
   } else if (BabelType.isArrayPattern(v)) {
     v.elements.forEach(el => el && ids.push(...getIdentifiers(el)))
