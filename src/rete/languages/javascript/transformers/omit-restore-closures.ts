@@ -99,7 +99,6 @@ export class OmitRestoreClosures<ASTNode extends ASTNodeBase, S extends Schemes>
         }))
 
         for (const subgraph of subgraphs) {
-          console.log(ifStatement.id, subgraph.nodes().map(n => n.id))
           if (subgraph.nodes().length > 0) {
             await toClosure(subgraph.nodes(), ifStatement.parent)
           }

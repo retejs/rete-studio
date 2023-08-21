@@ -2,7 +2,7 @@ import * as BabelType from '@babel/types'
 import * as t from '@babel/types'
 import traverse, { Scope as TraverseScope } from '@babel/traverse'
 import { getIdentifiers } from './utils'
-import { hoise, prepend } from './scope'
+import { append, hoise, prepend } from './scope'
 import { declarationToExpression, declarationToVariable } from './declarations'
 import { createLoop, loopToGoto } from './loop'
 
@@ -198,8 +198,44 @@ export function applyAstTransformations<T extends BabelType.Node>(node: T, scope
   return node
 }
 
+function omitBlockStatements(node: BabelType.Node, scope?: TraverseScope) {
+  traverse(node, {
+    enter(path) {
+      if (path.isBlockStatement() && path.parentPath.isScopable()) {
+        if (path.node.body.length > 0 && !path.node.body.some(item => t.isVariableDeclaration(item))) {
+          const create = path.parentPath.isBlockStatement() ? t.blockStatement : t.program
+          if (path.parentPath.isBlockStatement() || path.parentPath.isProgram()) {
+            const body = path.parentPath.node.body.map(item => {
+              return item === path.node ? path.node.body : item
+            }).flat()
+
+            path.parentPath.replaceWith(create(body))
+          }
+        }
+      }
+      if (path.isIfStatement()) {
+        if (t.isBlockStatement(path.node.consequent) && path.node.consequent.body.length === 1 && !t.isVariableDeclaration(path.node.consequent.body[0])) {
+          path.replaceWith(t.ifStatement(path.node.test, path.node.consequent.body[0], path.node.alternate))
+        }
+        if (t.isBlockStatement(path.node.alternate) && path.node.alternate.body.length === 1 && !t.isVariableDeclaration(path.node.alternate.body[0])) {
+          path.replaceWith(t.ifStatement(path.node.test, path.node.consequent, path.node.alternate.body[0]))
+        }
+      }
+      if (path.isBlockStatement() && path.parentPath.isLabeledStatement() && path.node.body.length === 1 && !t.isVariableDeclaration(path.node.body[0])) {
+        path.parentPath.replaceWith(t.labeledStatement(path.parentPath.node.label, path.node.body[0]))
+      }
+      // if (path.isBlockStatement() && path.parentPath.isProgram()) {
+      //   if (path.parentPath.node.body.length === 1) {
+      //     path.replaceWith(t.program(path.node))
+      //   }
+      // }
+    }
+  }, scope)
+}
+
 export function applyAstReverseTransformations<T extends BabelType.Node>(node: T, scope?: TraverseScope): T {
   const n = BabelType.isProgram(node) ? BabelType.file(node) : node
+
   traverse(n, {
     enter(path) {
       if (path.isObjectProperty()) {
@@ -214,5 +250,118 @@ export function applyAstReverseTransformations<T extends BabelType.Node>(node: T
       }
     }
   }, scope)
+
+  omitBlockStatements(n, scope)
+
+  // omit else after trailing break/continue
+  traverse(n, {
+    enter(path) {
+      if (path.isIfStatement()) {
+        const { test, consequent, alternate } = path.node
+        const lastConsequentStatement = getLast(consequent)
+
+        if (alternate && (t.isBreakStatement(lastConsequentStatement) || t.isContinueStatement(lastConsequentStatement))) {
+
+          if (t.isIfStatement(path.parent) && path.key === 'consequent') {
+            path.parentPath.replaceWith(t.ifStatement(path.parent.test, t.blockStatement([path.node]), path.parent.alternate))
+          }
+
+          path.insertAfter(alternate)
+          path.replaceWith(t.ifStatement(test, consequent))
+        }
+      }
+    }
+  }, scope)
+
+  omitBlockStatements(n, scope)
+
+  // do while
+  traverse(n, {
+    enter(path) {
+      if (path.isLabeledStatement()) {
+        const body = path.node.body
+
+        if (t.isBlockStatement(body)) {
+          const last = body.body[body.body.length - 1]
+
+          if (t.isIfStatement(last)) {
+            if (t.isContinueStatement(last.consequent) && (!last.alternate || t.isBreakStatement(last.alternate))) {
+              if (last.consequent.label?.name === path.node.label.name) {
+                path.replaceWith(t.labeledStatement(path.node.label,
+                  t.doWhileStatement(last.test, t.blockStatement(body.body.slice(0, body.body.length - 1)))
+                ))
+              }
+            }
+          }
+        }
+      }
+    }
+  }, scope)
+
+  traverse(n, {
+    enter(path) {
+      if (path.isLabeledStatement()) {
+        const body = path.node.body
+
+        if (t.isIfStatement(body)) {
+          const last = getLast(body.consequent)
+
+          if (t.isContinueStatement(last) && last.label?.name === path.node.label.name) {
+            path.replaceWith(t.labeledStatement(path.node.label,
+              t.whileStatement(body.test, body.consequent)
+            ))
+            if (body.alternate) append(path.parent, body.alternate, path.node)
+          }
+        }
+      }
+    }
+  }, scope)
+
+
+  // remove redundant continue statements
+  traverse(n, {
+    enter(path) {
+      if (path.isWhileStatement() && t.isLabeledStatement(path.parent)) {
+        const last = getLast(path.node.body)
+
+        if (t.isContinueStatement(last) && path.parent.label.name === last.label?.name) {
+          path.traverse({
+            enter: continuePath => {
+              if (continuePath.node === last) continuePath.remove()
+            }
+          })
+        }
+      }
+    }
+  }, scope)
+
+  // remove unused labels
+  traverse(n, {
+    enter(path) {
+      if (path.isLabeledStatement()) {
+        let used = false
+
+        path.traverse({
+          enter(nestedPath) {
+            if (nestedPath.isBreakStatement() || nestedPath.isContinueStatement()) {
+              if (nestedPath.node.label?.name === path.node.label.name) {
+                used = true
+              }
+            }
+          }
+        })
+        if (!used) path.replaceWith(path.node.body)
+      }
+    }
+  }, scope)
+
   return n as T
+}
+
+
+function getLast(statement: BabelType.Statement) {
+  if (t.isBlockStatement(statement)) {
+    return getLast(statement.body[statement.body.length - 1])
+  }
+  return statement
 }
