@@ -1,16 +1,5 @@
 2;
-{
-  loop88a1524275076ee7: {
-    if (true) {
-      if (true) {
-        3.5;
-      }
-      {
-        3.9;
-        {
-          continue loop88a1524275076ee7;
-        }
-      }
-    }
-  }
+while (true) {
+  if (true) 3.5;
+  3.9;
 }

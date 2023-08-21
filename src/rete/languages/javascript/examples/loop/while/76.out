@@ -1,19 +1,6 @@
 0;
-{
-  {
-    loopd4bc5a226f23d2e8: {
-      if (true) {
-        if (true) {
-          continue loopd4bc5a226f23d2e8;
-        } else {
-          2;
-          {
-            continue loopd4bc5a226f23d2e8;
-          }
-        }
-      } else {
-        3;
-      }
-    }
-  }
+loop9c91278670f3c39d: while (true) {
+  if (true) continue loop9c91278670f3c39d;
+  2;
 }
+3;

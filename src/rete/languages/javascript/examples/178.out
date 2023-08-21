@@ -1,8 +1,6 @@
 1;
 if (true) {} else {
   2;
-  if (true) {} else {
-    3;
-  }
+  if (true) {} else 3;
 }
 4;

@@ -1,18 +1,8 @@
 0;
-{
-  {
-    loop6435ebc227d05224: {
-      if (true) {
-        if (1) {
-          2;
-          3;
-          {
-            continue loop6435ebc227d05224;
-          }
-        } else {
-          continue loop6435ebc227d05224;
-        }
-      }
-    }
+loop40cee930ff670882: while (true) {
+  if (1) {
+    2;
+    3;
+    continue loop40cee930ff670882;
   }
 }

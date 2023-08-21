@@ -4,9 +4,5 @@
     1;
     _switchCase = true;
   }
-  if (_switchCase || n === 2) {
-    2;
-  } else {
-    3;
-  }
+  if (_switchCase || n === 2) 2;else 3;
 }

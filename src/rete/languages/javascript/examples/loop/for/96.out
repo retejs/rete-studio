@@ -1,26 +1,13 @@
 {
   let i = 0;
-  {
-    {
-      loop5fcee9f0a3419d22: {
-        if (i < 0) {
-          "1";
-          if (true) {
-            i++;
-            {
-              continue loop5fcee9f0a3419d22;
-            }
-          } else {
-            1;
-            i++;
-            {
-              continue loop5fcee9f0a3419d22;
-            }
-          }
-        } else {
-          1;
-        }
-      }
+  loop40b50ebe5c1054f7: while (i < 0) {
+    "1";
+    if (true) {
+      i++;
+      continue loop40b50ebe5c1054f7;
     }
+    1;
+    i++;
   }
+  1;
 }

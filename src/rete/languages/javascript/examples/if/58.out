@@ -1,10 +1,6 @@
 if (true) {
-  {
-    const i = 1;
-  }
+  const i = 1;
 } else {
-  {
-    const i = 2;
-  }
+  const i = 2;
 }
 3;

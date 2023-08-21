@@ -6,12 +6,6 @@ if (true) {
   5.7;
   5.8;
   5.9;
-} else {
-  if (true) {
-    6;
-  } else {
-    6.5;
-  }
-}
+} else if (true) 6;else 6.5;
 7;
 8;

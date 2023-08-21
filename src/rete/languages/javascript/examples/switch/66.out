@@ -1,19 +1,11 @@
 {
   let _switchCase;
-  if (_switchCase || n === 0) {
-    _switchCase = true;
-  }
+  if (_switchCase || n === 0) _switchCase = true;
   if (_switchCase || n === 1) {
     1;
-    if (true) {} else {
-      11;
-      _switchCase = true;
-    }
+    if (true) {} else 11;
+    _switchCase = true;
   }
-  if (_switchCase || n === 2) {
-    2;
-  } else {
-    3;
-  }
+  if (_switchCase || n === 2) 2;else 3;
+  9;
 }
-9;

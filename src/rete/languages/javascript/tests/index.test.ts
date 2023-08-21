@@ -8,10 +8,11 @@ import { Schemes } from '../../../types'
 // import { writeFileSync } from 'fs'
 import { loadExamplesList } from './utils'
 import { AreaPlugin } from 'rete-area-plugin'
+// import { join } from 'path'
 
 function matchCode(code: string): string {
   const labels = Array.from(new Set([
-    ...(code.match(/(\w*): (\{|if )/g) || []).map(l => /^(\w*): (\{|if )$/.exec(l)?.[1]),
+    ...(code.match(/(\w*): (\{|if |while )/g) || []).map(l => /^(\w*): (\{|if |while )$/.exec(l)?.[1]),
     ...(code.match(/(break|continue) (\w*)/g) || []).map(l => /(break|continue) (\w*)$/.exec(l)?.[2])
   ])).filter(Boolean) as string[]
 
@@ -21,6 +22,7 @@ function matchCode(code: string): string {
     return (c as any)
       .replaceAll(`${id}: {`, `${sub}: {`)
       .replaceAll(`${id}: if `, `${sub}: if `)
+      .replaceAll(`${id}: while `, `${sub}: while `)
       .replaceAll(`break ${id}`, `break ${sub}`)
       .replaceAll(`continue ${id}`, `continue ${sub}`)
   }, code).trim()
@@ -41,7 +43,7 @@ describe('test', () => {
       await toGraph(ast)
       const newCode = astTools.generate(await toAST())
 
-      // writeFileSync(`${path}.out`, newCode, { encoding: 'utf-8' })
+      // writeFileSync(join(__dirname, '..', 'examples', `${path}.out`), newCode, { encoding: 'utf-8' })
 
       expect(matchCode(newCode)).toEqual(matchCode(output))
     })

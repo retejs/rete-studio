@@ -1,38 +1,19 @@
 {
   let i = 0;
-  {
-    {
-      loop07e0a2c95e729445: {
-        if (i < 0) {
-          "1";
-          {
-            loopa19c494041927ea8: {
-              if (true) {
-                1;
-                if (true) {
-                  i++;
-                  {
-                    continue loop07e0a2c95e729445;
-                  }
-                } else {
-                  true;
-                  {
-                    continue loopa19c494041927ea8;
-                  }
-                }
-              } else {
-                1;
-                i++;
-                {
-                  continue loop07e0a2c95e729445;
-                }
-              }
-            }
-          }
-        } else {
-          1;
-        }
+  loop0cd9fdbe9cacfcd0: if (i < 0) {
+    "1";
+    while (true) {
+      1;
+      if (true) {
+        i++;
+        continue loop0cd9fdbe9cacfcd0;
       }
+      true;
     }
-  }
+    {
+      1;
+      i++;
+      continue loop0cd9fdbe9cacfcd0;
+    }
+  } else 1;
 }

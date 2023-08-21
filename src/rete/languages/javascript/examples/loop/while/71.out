@@ -1,31 +1,11 @@
 1;
-{
-  loop61122978c87be785: {
-    if (true) {
-      2;
-      {
-        loopdad4bdf49882bb96: {
-          if (true) {
-            3;
-            if (true) {
-              3.5;
-            }
-            {
-              3.9;
-              {
-                continue loopdad4bdf49882bb96;
-              }
-            }
-          } else {
-            4;
-            {
-              continue loop61122978c87be785;
-            }
-          }
-        }
-      }
-    } else {
-      5;
-    }
+while (true) {
+  2;
+  while (true) {
+    3;
+    if (true) 3.5;
+    3.9;
   }
+  4;
 }
+5;

@@ -1,17 +1,5 @@
-{
-  {
-    loopbc8879cf6047be1c: {
-      if (i < 0) {
-        i++;
-        if (true) {
-          continue loopbc8879cf6047be1c;
-        } else {
-          i++;
-          {
-            continue loopbc8879cf6047be1c;
-          }
-        }
-      }
-    }
-  }
+loopb6d3c7c9578413cf: while (i < 0) {
+  i++;
+  if (true) continue loopb6d3c7c9578413cf;
+  i++;
 }

@@ -1,14 +1,7 @@
 0;
-{
-  loop7d278d0eae84f4fc: {
-    1;
-    if (true) {
-      continue loop7d278d0eae84f4fc;
-    } else {
-      break loop7d278d0eae84f4fc;
-    }
-  }
+loop528e7d1842d34a45: {
+  1;
+  if (true) continue loop528e7d1842d34a45;
+  break loop528e7d1842d34a45;
 }
-{
-  2;
-}
+2;

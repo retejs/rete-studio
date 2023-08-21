@@ -1,20 +1,8 @@
 2;
-{
-  loope6ddf97849401943: {
-    if (true) {
-      3;
-      if (true) {
-        3.5;
-      }
-      {
-        3.9;
-        {
-          continue loope6ddf97849401943;
-        }
-      }
-    } else {
-      4;
-      5;
-    }
-  }
+while (true) {
+  3;
+  if (true) 3.5;
+  3.9;
 }
+4;
+5;

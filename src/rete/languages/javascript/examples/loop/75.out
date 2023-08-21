@@ -1,20 +1,10 @@
 0;
-{
-  loop7ec8a1f92152f7e9: {
-    if (true) {
-      if ("true") {
-        1;
-        {
-          break loop7ec8a1f92152f7e9;
-        }
-      } else {
-        1;
-        2;
-        {
-          continue loop7ec8a1f92152f7e9;
-        }
-      }
-    }
+loop1e835c86b7bb9a1e: while (true) {
+  if ("true") {
+    1;
+    break loop1e835c86b7bb9a1e;
   }
+  1;
+  2;
 }
 "1";

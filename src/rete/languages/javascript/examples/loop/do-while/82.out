@@ -1,12 +1,7 @@
 let i = 0;
-{
-  loop559b929ec06e921f: {
-    console.log(i);
-    i++;
-    if (i < 10) {
-      continue loop559b929ec06e921f;
-    } else {
-      break loop559b929ec06e921f;
-    }
-  }
+loopbcfcd162933d8295: {
+  console.log(i);
+  i++;
+  if (i < 10) continue loopbcfcd162933d8295;
+  break loopbcfcd162933d8295;
 }

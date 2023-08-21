@@ -1,20 +1,10 @@
 0;
-{
-  loop4179b2dafb5826db: {
-    if (true) {
-      if ("true") {
-        1;
-        {
-          break loop4179b2dafb5826db;
-        }
-      } else {
-        1;
-        2;
-        {
-          continue loop4179b2dafb5826db;
-        }
-      }
-    }
+loopdd7860c967d02eb0: while (true) {
+  if ("true") {
+    1;
+    break loopdd7860c967d02eb0;
   }
+  1;
+  2;
 }
 "1";

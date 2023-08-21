@@ -1,6 +1,2 @@
-if (true) {
-  2;
-} else {
-  3;
-}
+if (true) 2;else 3;
 4;

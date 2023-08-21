@@ -1,17 +1,9 @@
 {
   let i = 0;
   let n = 0;
-  {
-    loop02a40e004bdf6f7e: {
-      if (i < 0) {
-        i;
-        i++;
-        {
-          continue loop02a40e004bdf6f7e;
-        }
-      } else {
-        1;
-      }
-    }
+  while (i < 0) {
+    i;
+    i++;
   }
+  1;
 }

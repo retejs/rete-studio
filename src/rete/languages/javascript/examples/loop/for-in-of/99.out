@@ -1,28 +1,15 @@
 1;
 {
   const iterator = list[Symbol.iterator]();
-  {
-    {
-      {
-        loop36c30b0d59d431d9: {
-          const {
-            value: value,
-            done: done
-          } = iterator.next();
-          if (done) {
-            3;
-          } else const key = list;
-          1;
-          if (key) {
-            continue loop36c30b0d59d431d9;
-          } else {
-            2;
-            {
-              continue loop36c30b0d59d431d9;
-            }
-          }
-        }
-      }
-    }
+  loop79d6515481d95905: {
+    const {
+      value: value,
+      done: done
+    } = iterator.next();
+    if (done) 3;else const key = list;
+    1;
+    if (key) continue loop79d6515481d95905;
+    2;
+    continue loop79d6515481d95905;
   }
 }
