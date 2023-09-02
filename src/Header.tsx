@@ -1,9 +1,9 @@
+'use client'
+
 import { Badge, Button, Menu, MenuProps, Select, Tooltip } from 'antd'
 import { useContext, useMemo } from 'react'
-import { Link as RouterLink, useLocation } from 'react-router-dom'
+import { default as RouterLink } from 'next/link'
 import styled from 'styled-components'
-import { EnvContext } from './main'
-import { languages } from './rete/languages/list'
 import { Logo } from './shared/Logo'
 import { tokens, transparentBgBase } from './theme'
 import { DiscordIcon } from './shared/DiscordIcon'
@@ -11,6 +11,7 @@ import { GithubOutlined, TwitterOutlined } from '@ant-design/icons'
 import { social } from './consts'
 import { useWindowSize } from 'usehooks-ts'
 import { Link } from './shared/Link'
+import { usePathname } from 'next/navigation'
 
 const Container = styled.div`
   color: white;
@@ -37,8 +38,8 @@ const Container = styled.div`
 
 const HeaderMenu = styled(Menu)`
   flex: 1;
-  margin-left: 1em;
-  background: transparent;
+  margin-left: 1em !important;
+  background: transparent !important;
   overflow: hidden;
 `
 
@@ -67,26 +68,23 @@ const Social = styled.div`
   gap: 0.5em;
   padding: 0.5em 1em;
   .ant-btn-icon-only .anticon {
-    font-size: 21px;
+    font-size: 21px !important;
   }
 `
 function SocialLink(props: { title: string, icon?: JSX.Element, to: string }) {
-  if (!props.icon) return <RouterLink to={props.to} target='_blank'>{props.title}</RouterLink>
+  if (!props.icon) return <RouterLink href={props.to} target='_blank'>{props.title}</RouterLink>
 
   return (
     <Tooltip title={props.title}>
-      <RouterLink to={props.to} target='_blank'><Button type="text" icon={props.icon} /></RouterLink>
+      <RouterLink href={props.to} target='_blank'><Button type="text" icon={props.icon} /></RouterLink>
     </Tooltip>
   )
 }
 
 export function Header() {
-  const location = useLocation();
-  const env = useContext(EnvContext)
+  const pathname = usePathname()
   const { width } = useWindowSize()
-  const isPhone = width < 500
-
-  if (!env) throw new Error('EnvContext is not provided')
+  const isPhone = width > 0 && width < 500
 
   const items = useMemo(() => {
     const items: MenuProps['items'] = [
@@ -132,7 +130,7 @@ export function Header() {
         <div className='title'><Badge count="Beta" offset={[13, -3]}>Rete Studio</Badge></div>
       </MainLink>
       <HeaderMenu
-        selectedKeys={[location.pathname]}
+        selectedKeys={[pathname]}
         mode="horizontal"
         items={items}
       />
@@ -141,15 +139,6 @@ export function Header() {
         <SocialLink title={social.twitter.title} to={social.twitter.to} icon={<TwitterOutlined />} />
         <SocialLink title={social.discord.title} to={social.discord.to} icon={<DiscordIcon />} />
       </Social>}
-      <Select
-        size='small'
-        value={env.current}
-        onChange={value => env.set(value)}
-        style={{ width: 110 }}
-        options={languages.map(({ name, key }) => {
-          return { label: name, value: key }
-        })}
-      />
     </Container>
   )
 }

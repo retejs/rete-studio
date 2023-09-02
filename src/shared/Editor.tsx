@@ -1,3 +1,4 @@
+'use client'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { CodeFilled, LayoutFilled } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
@@ -5,17 +6,17 @@ import styled from 'styled-components'
 import { useRete } from 'rete-react-plugin';
 import { createEditor } from '../rete'
 import { getLanguage } from '../rete/languages'
-import { EnvContext } from '../main';
 import { delay } from '../utils/delay';
+import { useLang } from './Lang';
 
 const SaveButton = styled(Button)`
-  position: absolute;
+  position: absolute !important;
   top: 1em;
   right: 1em;
   z-index: 1;
 `
 const LayoutButton = styled(Button)`
-  position: absolute;
+  position: absolute !important;
   bottom: 1em;
   right: 1em;
   z-index: 1;
@@ -45,7 +46,7 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
 }
 
 export function useEditor(props: { code: string | undefined, autoCode?: boolean }) {
-  const env = useContext(EnvContext)
+  const env = { current: useLang() }
   const create = useCallback((container: HTMLElement) => {
     const language = env?.current
     if (!language) throw new Error('Language not found')

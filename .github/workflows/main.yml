@@ -30,13 +30,15 @@ jobs:
         with:
           node-version: "16"
       - name: Install dependencies
-        run: npm ci
+        run: npm i
+      - name: Lint
+        run: npm run lint -- --quiet
       - name: Build
-        run: npm run build
+        run: npm run build -- --no-lint
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./dist
+          path: ./out
 
   # Deployment job
   deploy:

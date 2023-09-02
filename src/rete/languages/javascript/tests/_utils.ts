@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'fs'
 import { join, relative } from 'path'
-import { File, flatExamples, Folder } from '../../utils'
+import { File, flatExamples, Folder } from '../../_utils'
 
 export function readFilesRecursively(dir: string) {
   const items = readdirSync(dir)

@@ -29,14 +29,8 @@ export class SelectControl extends ClassicPreset.Control {
   }
 }
 
-export class Socket extends ClassicPreset.Socket {
-
-  clone() {
-    return new Socket(this.name)
-  }
-}
-
-export const socket = new Socket('any')
+import { socket, Socket } from './sockets'
+export { socket, Socket }
 
 export class RefSocket extends Socket {
   isRef = true

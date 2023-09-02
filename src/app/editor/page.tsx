@@ -1,16 +1,18 @@
+'use client'
 import { Button, Tree, Typography, message } from 'antd';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { DataNode } from 'antd/es/tree';
 import { Editor as MonacoEditor } from '@monaco-editor/react';
 import styled from 'styled-components';
-import { Area } from './shared/Area';
+import { Area } from '../../shared/Area';
 import { FileOutlined, ReloadOutlined } from '@ant-design/icons';
-import { Spin } from './Spin';
-import { useEditor } from './shared/Editor';
+import { Spin } from '../../Spin';
+import { useEditor } from '../../shared/Editor';
 import { useDebounce } from 'usehooks-ts';
-import { EnvContext } from './main';
-import { CodeError } from './shared/Alert';
+import { CodeError } from '../../shared/Alert';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
+import ClientLayout from '../client-layout'
+import { useLang } from '@/shared/Lang';
 
 const Grid = styled.div<{ showCanvas?: boolean }>`
   display: grid;
@@ -93,7 +95,7 @@ function getFormat(language?: string) {
 
 type TreeItem = DataNode & { entry: FileSystemDirectoryHandle | FileSystemFileHandle }
 
-export default function Editor() {
+function Editor() {
   const [treeData, setTreeData] = useState<TreeItem[]>([])
   const [file, setFile] = useState<{ path: string, code: string, format: string } | undefined>()
   const [expandedKeys, setExpandedKeys] = useState<(number | string)[]>([])
@@ -101,7 +103,7 @@ export default function Editor() {
   const debouncedCode = useDebounce(file?.code, 500)
   const editor = useEditor({ code: debouncedCode, autoCode: false })
   const [messageApi, contextHolder] = message.useMessage({ top: 60 });
-  const env = useContext(EnvContext)
+  const env = { current: useLang() }
   const language = file && getLanguage(file.format)
   const hasVisualEditor = env?.current === language
 
@@ -294,3 +296,12 @@ export default function Editor() {
     </Grid>
   )
 }
+
+export default function Page() {
+  return (
+    <ClientLayout>
+      <Editor />
+    </ClientLayout>
+  )
+}
+

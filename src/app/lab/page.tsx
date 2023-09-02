@@ -1,25 +1,35 @@
-import { Button, Modal, Steps as AntSteps, Switch } from 'antd'
-import { CodeFilled, FilterFilled } from '@ant-design/icons';
+'use client'
+import { Button, Steps as AntSteps } from 'antd'
+import { CodeFilled } from '@ant-design/icons';
 import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 import styled from 'styled-components';
-import type { DataNode } from 'antd/es/tree';
-import { useSearchParams } from 'react-router-dom';
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Space, Tag } from 'antd';
+import { useEffect, useRef, useState } from 'react';
 import { DiffEditor } from '@monaco-editor/react';
 import type { editor as monacoEditor } from 'monaco-editor';
-import { Area } from './shared/Area';
-import { useEditor } from './shared/Editor';
-import { Spin } from './Spin';
+import { Area } from '../../shared/Area';
+import { useEditor } from '../../shared/Editor';
+import { Spin } from '../../Spin';
 import { useDebounce } from 'usehooks-ts';
-import { Examples } from './Tree';
-import { CodeError } from './shared/Alert';
-import { EnvContext } from './main';
-import { getLanguage } from './rete/languages';
-import { flatExamples, File, Folder } from './rete/languages/utils';
-import { CopyCode } from './shared/CopyCode';
+import { CodeError } from '../../shared/Alert';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { flatExamples, File, Folder } from '../../rete/languages/_utils';
+import { CopyCode } from '../../shared/CopyCode';
+import ClientLayout from '../client-layout'
+import { useSearchParams } from '@/shared/navigation';
+import { SwitchLang, useLang } from '@/shared/Lang';
+import dynamic from 'next/dynamic';
 
-const { CheckableTag } = Tag;
+const Explorer = dynamic(() => import('./Explorer').then(res => res.Explorer), { ssr: false })
+const Switch = dynamic(() => import('antd').then(res => res.Switch), { ssr: false }) // fix hydration error
+
+const ExplorerArea = styled(Area)`
+  grid-area: explorer;
+  background: #1e1e1e;
+  overflow: hidden;
+  position: relative;
+  padding: 0.5em 0;
+`
 
 const Container = styled.div`
   display: grid;
@@ -36,14 +46,6 @@ const Container = styled.div`
   }
 `
 
-const Explorer = styled(Area)`
-  grid-area: explorer;
-  background: #1e1e1e;
-  overflow: hidden;
-  position: relative;
-  padding: 0.5em 0;
-`
-
 const Canvas = styled(Area)`
   grid-area: canvas;
   position: relative;
@@ -54,12 +56,6 @@ const Editor = styled(Area)`
   position: relative;
 `
 
-const FilterButton = styled(Button)`
-  position: absolute;
-  top: 1em;
-  right: 1em;
-  z-index: 1;
-`
 
 const StepByStep = styled.div`
   border-radius: 6px;
@@ -97,40 +93,18 @@ function useDiffEditorSync(value: string, onChange: (value: string) => void) {
   }
 }
 
-export default function Lab() {
-  const env = useContext(EnvContext)
-  const language = env ? getLanguage(env.current) : null
-  const examples = language?.examples
-  const exampleList = examples ? flatExamples(examples) : []
-  const [searchParams, setSearchParams] = useSearchParams()
-  const labels = useMemo(() => examples ? Array.from(new Set(exampleList.map(example => (example.labels || [])).flat() ?? [])).sort() : [], [examples])
-  const example = searchParams.get('example') || (examples && exampleList[0]?.path)
-  const selectedLabels = useMemo(() => searchParams.get('labels')?.split(',') || labels, [searchParams.get('labels'), labels])
-  const [openFilters, setOpenFilters] = useState(false)
+function Lab() {
+  const lang = useLang()
+  const [example, setExample] = useState<string>('')
   const [code, setCode] = useState<string>('')
   const [stepByStepCode, setStepByStepCode] = useState<string>('')
   const debouncedCode = useDebounce(code, 500)
-  const currentExample = exampleList.find(item => item.path === example)
   const [stepByStep, setStepByStep] = useState(false)
   const [step, setStep] = useState(-1)
   const editor = useEditor({ code: stepByStep ? undefined : debouncedCode })
   const diffEditorSync = useDiffEditorSync(code, setCode)
-  const examplesTree = useMemo(() => {
-    function toTree(items: (File | Folder)[]): DataNode[] {
-      return items.map(item => {
-        if ('children' in item) return { title: item.name, key: item.name, children: toTree(item.children) }
-        return { title: item.name, key: item.path, isLeaf: true, disabled: !(item.labels || []).some(label => selectedLabels.includes(label)) }
-      })
-    }
-    if (!examples) return []
-    return toTree(examples)
-  }, [examples, selectedLabels])
 
-  useEffect(() => {
-    searchParams.delete('labels')
-    if (!currentExample) searchParams.delete('example')
-    setSearchParams(searchParams)
-  }, [env?.current])
+
 
   useEffect(() => {
     setStepByStep(false)
@@ -141,38 +115,15 @@ export default function Lab() {
   }, [stepByStep])
 
 
-  useEffect(() => {
-    setCode(currentExample?.input || '')
-  }, [currentExample])
-
-  function setExample(name: string) {
-    searchParams.set('example', name)
-
-    setSearchParams(searchParams)
-  }
-  const setSelectedLabels = useCallback((next: string[]) => {
-    if (labels.length === next.length) {
-      searchParams.delete('labels')
-    } else {
-      searchParams.set('labels', next.join(','))
-    }
-
-    setSearchParams(searchParams)
-  }, [searchParams, setSearchParams, labels])
-
-
   return (
     <Container>
-      <Explorer>
-        <FilterButton onClick={() => setOpenFilters(true)} icon={<FilterFilled />} size="small" />
-        <OverlayScrollbarsComponent defer style={{ height: "100%" }}>
-          <Examples
-            selected={example}
-            onSelect={example => setExample(String(example))}
-            treeData={examplesTree}
-          />
-        </OverlayScrollbarsComponent>
-      </Explorer>
+      <ExplorerArea>
+        <Explorer
+          lang={lang}
+          setCode={setCode}
+          setExample={setExample}
+        />
+      </ExplorerArea>
       <Editor>
         <Spin spinning={editor.graphToCode.loading} style={{ left: '25%' }} />
         <DiffEditor
@@ -230,7 +181,7 @@ export default function Lab() {
               await editor.stepDown?.();
               setStep(editor.getCurrentStep())
             }}>{'<'}</Button>
-            <Button disabled={!stepByStep || editor.maxStep && step >= editor.maxStep} onClick={async () => {
+            <Button disabled={!stepByStep || (editor.maxStep ? step >= editor.maxStep : false)} onClick={async () => {
               await editor.stepUp?.();
               setStep(editor.getCurrentStep())
             }}>{'>'}</Button>
@@ -243,34 +194,14 @@ export default function Lab() {
           </Button.Group>
         </StepByStep>
       </Canvas>
-      <Modal
-        open={openFilters} title="Filter by AST node types"
-        onCancel={() => setOpenFilters(false)}
-        width="80vw"
-        footer={
-          <Space>
-            <Button
-              onClick={() => selectedLabels.length < labels.length ? setSelectedLabels(labels) : setSelectedLabels([])}
-            >
-              {selectedLabels.length < labels.length ? 'Select all' : 'Unselect'}
-            </Button>
-          </Space>
-        }
-      >
-        <Space size={[0, 8]} wrap>
-          {labels.map((tag) => (
-            <CheckableTag
-              key={tag}
-              checked={selectedLabels.includes(tag)}
-              onChange={(checked) => {
-                setSelectedLabels(checked ? [...selectedLabels, tag] : selectedLabels.filter(n => n !== tag))
-              }}
-            >
-              {tag}
-            </CheckableTag>
-          ))}
-        </Space>
-      </Modal>
     </Container>
+  )
+}
+
+export default function Page() {
+  return (
+    <ClientLayout>
+      <Lab />
+    </ClientLayout>
   )
 }

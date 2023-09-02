@@ -6,7 +6,7 @@ import { NodeEditor } from 'rete'
 import { initCodePlugin } from '../code-plugin'
 import { Schemes } from '../../../types'
 // import { writeFileSync } from 'fs'
-import { loadExamplesList } from './utils'
+import { loadExamplesList } from './_utils'
 import { AreaPlugin } from 'rete-area-plugin'
 // import { join } from 'path'
 

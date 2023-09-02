@@ -1,15 +1,20 @@
-import { Editor } from '@monaco-editor/react';
+'use client'
+
 import { editor as monaco } from 'monaco-editor';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useDebounce } from 'usehooks-ts'
-import { Area } from './shared/Area';
-import { Spin } from './Spin'
-import { useEditor } from './shared/Editor';
-import { CodeError } from './shared/Alert';
-import { EnvContext } from './main';
-import { getLanguage } from './rete/languages';
-import { CopyCode } from './shared/CopyCode';
+import { Area } from '../../shared/Area';
+import { Spin } from '../../Spin'
+import { useEditor } from '../../shared/Editor';
+import { CodeError } from '../../shared/Alert';
+import { getLanguage } from '../../rete/languages';
+import { CopyCode } from '../../shared/CopyCode';
+import ClientLayout from '../client-layout'
+import dynamic from 'next/dynamic';
+import { useSearchParams } from '@/shared/navigation';
+import { SwitchLang, useLang } from '@/shared/Lang';
+import { Editor } from '@monaco-editor/react';
 
 const Layout = styled.div`
   display: grid;
@@ -55,18 +60,18 @@ const Canvas = styled(Area)`
 `
 
 
-export default function Playground() {
-  const env = useContext(EnvContext)
+export function Playground() {
+  const lang = useLang()
   const [code, setCode] = useState<string | undefined>()
   const debouncedCode = useDebounce(code, 500)
   const editor = useEditor({ code: debouncedCode })
 
   useEffect(() => {
-    const language = env?.current && getLanguage(env.current)
+    const language = lang && getLanguage(lang)
 
     if (!language) return
     setCode(language.playgroundExample)
-  }, [env?.current])
+  }, [lang])
 
   const options: monaco.IStandaloneEditorConstructionOptions = {
     minimap: {
@@ -85,6 +90,7 @@ export default function Playground() {
           onChange={setCode}
           options={options}
         />
+        <SwitchLang />
         {editor.codeToGraph.status && <CodeError message={editor.codeToGraph.status?.message} placement="right" />}
       </Source>
       <Result>
@@ -103,5 +109,13 @@ export default function Playground() {
         {editor.canvas}
       </Canvas>
     </Layout>
+  )
+}
+
+export default function Page() {
+  return (
+    <ClientLayout>
+      <Playground />
+    </ClientLayout>
   )
 }

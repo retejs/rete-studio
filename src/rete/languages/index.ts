@@ -5,8 +5,7 @@ import { Schemes } from '../types'
 
 import * as JavaScript from './javascript'
 import * as Debug from './debug'
-import { File, Folder } from './utils'
-
+import { File, Folder } from './_utils'
 
 export const Languages = {
   'javascript': JavaScript,

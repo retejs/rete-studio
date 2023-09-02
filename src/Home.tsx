@@ -1,13 +1,13 @@
+'use client'
 import * as React from 'react';
 import styled from 'styled-components';
-import { useNavigate } from './shared/Link';
 import { Section } from './shared/Section';
 import { Logo } from './shared/Logo';
 import { Badge, Button, Collapse, Layout } from 'antd';
 import { EditFilled, ExperimentFilled, PlayCircleFilled } from '@ant-design/icons';
 import { tokens } from './theme';
-import { Link } from 'react-router-dom';
 import { githubRepoIssues } from './consts';
+import Link from 'next/link';
 
 const { Footer } = Layout
 
@@ -69,12 +69,13 @@ const Feature = styled.div`
     font-size: 0.9em;
     margin: 1em 0;
   }
-  button {
+  .ant-btn {
     border-radius: 2em;
     font-size: 0.8em;
     padding: 2px 12px;
     height: 28px;
     box-shadow: none;
+    line-height: 1.8em;
   }
 `
 
@@ -98,7 +99,7 @@ const DisclaimerStyle = styled.div`
     margin-top: 0.5em;
   }
   .ant-collapse, .ant-collapse-item, .ant-collapse-content {
-    border: 0;
+    border: 0 !important;
   }
   .ant-collapse>.ant-collapse-item >.ant-collapse-header {
     height: 0;
@@ -112,7 +113,7 @@ const DisclaimerStyle = styled.div`
     color: ${tokens?.colorError};
   }
   .ant-collapse-content {
-    color: ${tokens?.colorPrimary};
+    color: ${tokens?.colorPrimary} !important;
     .ant-collapse-content-box {
       padding: 0;
     }
@@ -131,7 +132,7 @@ function Disclaimer() {
             It requires numerous transformations to convert each language structure into a user-friendly graph.
             Consequently, it is important to verify that the obtained graph is correctly converted into code that reflects the original code.
             <br />
-            If you come across any issue, please submit a ticket on <Link to={githubRepoIssues} target="_blank">GitHub Issues</Link>
+            If you come across any issue, please submit a ticket on <Link href={githubRepoIssues} target="_blank">GitHub Issues</Link>
           </div>
         }
       ]} />
@@ -140,12 +141,10 @@ function Disclaimer() {
 }
 
 function FeatureButton(props: { to: string, icon: JSX.Element, children: React.ReactNode }) {
-  const navigate = useNavigate()
-
   return <Button
-    onClick={() => navigate(props.to)}
     type="primary"
     icon={props.icon}
+    href={props.to}
   >
     {props.children}
   </Button>

@@ -3,7 +3,7 @@ import { DeliveredProcedureOutlined } from '@ant-design/icons'
 import { Button, Tooltip, message } from 'antd';
 
 const CopyButton = styled(Button)`
-  position: absolute;
+  position: absolute !important;
   bottom: 1em;
   right: 1em;
   z-index: 20;

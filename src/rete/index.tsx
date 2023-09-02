@@ -21,7 +21,7 @@ import { getDOMSocketPosition } from 'rete-render-utils'
 import { ControlSocket, InputControl, InsertControl, RefSocket, SelectControl } from './nodes'
 import { Drag as AreaDrag } from 'rete-area-plugin';
 import { HistoryExtensions, HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin'
-import { flatExamples } from './languages/utils'
+import { flatExamples } from './languages/_utils'
 import { items as contextMenuItems } from './context-menu'
 import * as UI from './ui'
 

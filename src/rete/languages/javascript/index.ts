@@ -1,6 +1,6 @@
 import traverse from '@babel/traverse';
 import { astTools } from './code-plugin';
-import { File, Folder } from '../utils';
+import { File, Folder } from '../_utils';
 import { LanguageSnippet } from '..';
 
 export { astTools, initCodePlugin } from './code-plugin'
@@ -16,7 +16,7 @@ function f(items: (File | Folder)[]): (File | Folder)[] {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-export const examples = f(EXAMPLES as (File | Folder)[])
+export const examples = f(JSON.parse(process.env.JS_EXAMPLES) as (File | Folder)[])
 
 function getLabels(code: string) {
   const ast = astTools.parse(code)

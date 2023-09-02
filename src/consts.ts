@@ -16,3 +16,5 @@ export const social = {
     to: 'https://discord.gg/cxSFkPZdsV'
   }
 }
+
+export const GA_MEASUREMENT_ID = 'G-F46GVM1665'

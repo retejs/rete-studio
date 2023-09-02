@@ -6,7 +6,7 @@ import { BaseNode, Output } from '../../nodes'
 import { Connection } from '../../connections'
 import { socket } from '../../sockets'
 import { AreaPlugin } from 'rete-area-plugin'
-import { File, Folder } from '../utils'
+import { File, Folder } from '../_utils'
 import { LanguageSnippet } from '..'
 
 type N = any
