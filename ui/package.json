@@ -1,0 +1,40 @@
+{
+  "name": "rete-studio-ui",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "build": "rete build -c rete.config.ts",
+    "lint": "rete lint"
+  },
+  "author": "Vitaliy Stoliarov",
+  "license": "CC-BY-NC-SA-4.0",
+  "dependencies": {
+    "@ant-design/icons": "^5.2.6",
+    "@babel/preset-react": "^7.22.15",
+    "@monaco-editor/react": "^4.5.2",
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@types/styled-components": "^5.1.26",
+    "antd": "^5.8.6",
+    "elkjs": "^0.8.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rete-auto-arrange-plugin": "^2.0.0",
+    "rete-cli": "^1.0.1",
+    "rete-connection-plugin": "^2.0.0",
+    "rete-context-menu-plugin": "^2.0.0",
+    "rete-history-plugin": "^2.0.0",
+    "rete-react-plugin": "^2.0.1",
+    "rete-scopes-plugin": "^2.0.0",
+    "rete-structures": "^2.0.0",
+    "rete-studio-core": "file:../core/rete-studio-core-0.1.0.tgz"
+  },
+  "peerDependencies": {
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^18.2.7",
+    "eslint-plugin-react": "^7.33.2",
+    "styled-components": "^6.0.7",
+    "rollup-plugin-copy": "^3.5.0"
+  }
+}

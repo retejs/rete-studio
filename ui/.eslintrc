@@ -1,0 +1,36 @@
+{
+  "extends": [
+    "./node_modules/rete-cli/.eslintrc"
+  ],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "globals": {
+    "React": true,
+    "JSX": true
+  },
+  "plugins": [
+    "react"
+  ],
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "rules": {
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/no-shadow": "off",
+    "no-undefined": "off",
+    "comma-dangle": "off",
+    "newline-after-var": "off",
+    "complexity": "off",
+    "@typescript-eslint/semi": "off",
+    "semi": "off",
+    "indent": "off",
+    "no-console": "off",
+    "padded-blocks": "off",
+    "space-before-function-paren": "off",
+    "no-else-return": "off"
+  }
+}

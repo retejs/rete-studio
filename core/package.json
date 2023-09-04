@@ -1,0 +1,26 @@
+{
+  "name": "rete-studio-core",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "build": "rete build -c rete.config.ts",
+    "lint": "rete lint"
+  },
+  "author": "Vitaliy Stoliarov",
+  "license": "CC-BY-NC-SA-4.0",
+  "dependencies": {
+    "@babel/generator": "^7.22.10",
+    "@babel/parser": "^7.22.14",
+    "@babel/traverse": "^7.22.11",
+    "@babel/types": "^7.22.11",
+    "@types/babel__generator": "^7.6.4",
+    "@types/babel__traverse": "^7.20.1",
+    "rete": "^2.0.2",
+    "rete-area-plugin": "^2.0.0",
+    "rete-cli": "^1.0.1",
+    "rete-structures": "^2.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4"
+  }
+}
