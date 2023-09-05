@@ -12,6 +12,7 @@ import ClientLayout from '../client-layout'
 import { useLang } from '@/shared/Lang';
 import dynamic from 'next/dynamic';
 import { examplesMap, flatExamples } from './examples';
+import { getLanguage } from '@/languages';
 
 const Explorer = dynamic(() => import('./Explorer').then(res => res.Explorer), { ssr: false })
 const Switch = dynamic(() => import('antd').then(res => res.Switch), { ssr: false }) // fix hydration error
@@ -95,7 +96,7 @@ function Lab() {
   const debouncedCode = useDebounce(code, 500)
   const [stepByStep, setStepByStep] = useState(false)
   const [step, setStep] = useState(-1)
-  const editor = useEditor({ lang, code: stepByStep ? undefined : debouncedCode })
+  const editor = useEditor({ lang: getLanguage(lang), code: stepByStep ? undefined : debouncedCode })
   const diffEditorSync = useDiffEditorSync(code, setCode)
 
 

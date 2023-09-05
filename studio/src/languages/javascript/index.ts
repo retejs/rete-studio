@@ -1,6 +1,6 @@
 import traverse from '@babel/traverse';
-import { Languages } from 'rete-studio-core'
 import { File, Folder } from '../_utils';
+import { Languages } from '@/languages';
 
 const astTools = Languages.javascript.astTools
 

@@ -1,0 +1,8 @@
+{
+  "extends": [
+    "./node_modules/rete-cli/.eslintrc"
+  ],
+  "env": {
+    "browser": true
+  }
+}

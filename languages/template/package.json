@@ -1,0 +1,20 @@
+{
+  "name": "rete-studio-template-lang",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "build": "rete build -c rete.config.ts",
+    "lint": "rete lint"
+  },
+  "author": "Vitaliy Stoliarov",
+  "license": "CC-BY-NC-SA-4.0",
+  "peerDependencies": {
+    "rete": "^2.0.2",
+    "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
+  },
+  "devDependencies": {
+    "rete": "^2.0.2",
+    "rete-cli": "^1.0.1",
+    "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
+  }
+}

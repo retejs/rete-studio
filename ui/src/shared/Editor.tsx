@@ -5,8 +5,9 @@ import { Button, Tooltip } from 'antd'
 import styled from 'styled-components'
 import { useRete } from 'rete-react-plugin';
 import { createEditor } from '../editor'
-import { getLanguage } from 'rete-studio-core'
 import { delay } from '../delay';
+import { Language } from 'rete-studio-core';
+import { Theme } from '../theme';
 
 const SaveButton = styled(Button)`
   position: absolute !important;
@@ -44,18 +45,10 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
   }
 }
 
-export function useEditor(props: { lang: string, code: string | undefined, autoCode?: boolean }) {
-  const env = { current: props.lang }
+export function useEditor(props: { lang: Language<any, any, any, any>, code: string | undefined, autoCode?: boolean }) {
   const create = useCallback((container: HTMLElement) => {
-    const language = env?.current
-    if (!language) throw new Error('Language not found')
-
-    const lang = getLanguage(language)
-
-    if (!lang) throw new Error(`Language ${language} not found`)
-
-    return createEditor(container, lang)
-  }, [createEditor, env?.current])
+    return createEditor(container, props.lang)
+  }, [createEditor, props.lang])
   const [ref, editor] = useRete(create)
   const [code, setCode] = useState<string | undefined>()
   const executableCode = useMemo(() => code && editor?.toExecutable(code), [code, editor])
@@ -106,7 +99,7 @@ export function useEditor(props: { lang: string, code: string | undefined, autoC
     stepDown: editor?.stepDown,
     stepUp: editor?.stepUp,
     canvas: (
-      <>
+      <Theme>
         <Tooltip placement="bottom" title="To code">
           <SaveButton onClick={graphToCode.execute} icon={<CodeFilled />} />
         </Tooltip>
@@ -114,7 +107,7 @@ export function useEditor(props: { lang: string, code: string | undefined, autoC
           <LayoutButton onClick={() => editor?.layout()} icon={<LayoutFilled />} />
         </Tooltip>
         <div ref={ref} style={{ height: '100%', width: '100%' }} />
-      </>
+      </Theme>
     )
   }
 }

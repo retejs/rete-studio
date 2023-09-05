@@ -29,16 +29,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16"
-      - name: Install dependencies
-        run: npm i
+      - name: Setup packages
+        run: bash ./setup.sh
       - name: Lint
-        run: npm run lint -- --quiet
+        run: npm run lint --prefix studio -- --quiet
       - name: Build
-        run: npm run build -- --no-lint
+        run: npm run build --prefix studio -- --no-lint
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./out
+          path: ./studio/out
 
   # Deployment job
   deploy:

@@ -3,22 +3,6 @@ import { AreaPlugin } from 'rete-area-plugin'
 import { CodePlugin } from '../core'
 import { Schemes } from '../types'
 
-export { languages } from './list'
-
-import * as JavaScript from './javascript'
-import * as Debug from './debug'
-
-export const Languages = {
-  'javascript': JavaScript,
-  'debug': Debug,
-}
-
-export type LanguageId = keyof typeof Languages
-
-export function getLanguage(name: string | LanguageId) {
-  return Languages[name as LanguageId] || null
-}
-
 export type LanguageSnippet = {
   label: string
   code: (() => string) | string

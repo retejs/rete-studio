@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { Select } from 'antd';
-import { languages } from 'rete-studio-core'
+import { Theme } from './theme';
 
 const SwitchSelect = styled(Select)`
   position: absolute !important;
@@ -16,16 +16,27 @@ export function useLang(lang?: string | null) {
   return lang || defaultLang
 }
 
-export function SwitchLang(props: { lang?: string | null, setLang: (lang: string) => void }) {
+type Props = {
+  lang?: string | null
+  setLang: (lang: string) => void
+  languages: {
+    name: string
+    key: string
+  }[]
+}
+
+export function SwitchLang(props: Props) {
   return (
-    <SwitchSelect
-      size='small'
-      value={props.lang || defaultLang}
-      onChange={(value: any) => props.setLang(value as string)}
-      style={{ width: 110 }}
-      options={languages.map(({ name, key }) => {
-        return { label: name, value: key }
-      })}
-    />
+    <Theme>
+      <SwitchSelect
+        size='small'
+        value={props.lang || defaultLang}
+        onChange={(value: any) => props.setLang(value as string)}
+        style={{ width: 110 }}
+        options={props.languages.map(({ name, key }) => {
+          return { label: name, value: key }
+        })}
+      />
+    </Theme>
   )
 }

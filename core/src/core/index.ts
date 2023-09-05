@@ -7,25 +7,13 @@ import { Transformer } from './transformer'
 import { Output, Socket } from '../nodes'
 
 export {
-    cleanUpPorts,
-    collapsePort,
-    createSuperStatement,
-    expressionToExpressionStatement,
-    findLabeledStatement,
-    forEach,
-    getInputNode,
-    getOutputNode,
-    markClosures,
-    mergeSiblingNodes,
-    mirrorLeft,
-    mirrorRight,
-    patchPlaceholderPorts,
-    removeRedunantNodes,
-    rename,
-    simplifyIdentifiers,
-    simplifyLiterals,
-    treeToFlow
+    Transformer
+} from './transformer'
+export type {
+    EnsurePort
 } from './methods'
+export * from './methods'
+export * from './elaborate'
 
 export type ASTNodeBase = { type: string }
 export const BIND_KEY = 'bind'

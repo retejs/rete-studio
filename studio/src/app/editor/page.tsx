@@ -10,6 +10,7 @@ import { useDebounce } from 'usehooks-ts';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
 import ClientLayout from '../client-layout'
 import { useLang } from '@/shared/Lang';
+import { getLanguage } from '@/languages';
 
 const Grid = styled.div<{ showCanvas?: boolean }>`
   display: grid;
@@ -82,7 +83,7 @@ const formats = {
   tsx: 'typescriptreact',
 }
 
-function getLanguage(format: string) {
+function getFileLanguage(format: string) {
   return formats[format as keyof typeof formats] || 'plaintext'
 }
 
@@ -99,16 +100,16 @@ function Editor() {
   const [handle, setHandle] = useState<FileSystemDirectoryHandle>()
   const debouncedCode = useDebounce(file?.code, 500)
   const lang = useLang()
-  const editor = useEditor({ lang, code: debouncedCode, autoCode: false })
+  const editor = useEditor({ lang: getLanguage(lang), code: debouncedCode, autoCode: false })
   const [messageApi, contextHolder] = message.useMessage({ top: 60 });
   const env = { current: lang }
-  const language = file && getLanguage(file.format)
+  const language = file && getFileLanguage(file.format)
   const hasVisualEditor = env?.current === language
 
   async function directoryToItems(handle: FileSystemDirectoryHandle, path = '') {
     const items: TreeItem[] = []
 
-    for await (const entry of handle.values()) {
+    for await (const entry of (handle as any).values()) {
       const key = `${path}/${entry.name}`
 
       if (entry.kind === 'file') {
@@ -140,7 +141,7 @@ function Editor() {
       messageApi.error('Your browser does not support File System Access API')
       return
     }
-    const handle = await window.showDirectoryPicker();
+    const handle = await (window as any).showDirectoryPicker();
 
     setHandle(handle)
     setTreeData([

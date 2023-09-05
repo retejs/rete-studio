@@ -7,9 +7,10 @@ import { Area } from './shared/Area';
 import { Spin } from './shared/Spin'
 import { useEditor } from './shared/Editor';
 import { CodeError } from './shared/Alert';
-import { getLanguage } from 'rete-studio-core';
 import { CopyCode } from './shared/CopyCode';
 import { Editor } from '@monaco-editor/react';
+import { Language } from 'rete-studio-core';
+import { Theme } from './theme';
 
 const Layout = styled.div`
   display: grid;
@@ -54,17 +55,14 @@ const Canvas = styled(Area)`
   position: relative;
 `
 
-export function Playground({ lang, switchLang }: { switchLang: React.ReactNode, lang: string }) {
+export function Playground({ lang, example, switchLang }: { switchLang: React.ReactNode, example: string, lang: Language<any, any, any, any> }) {
   const [code, setCode] = useState<string | undefined>()
   const debouncedCode = useDebounce(code, 500)
   const editor = useEditor({ lang, code: debouncedCode })
 
   useEffect(() => {
-    const language = lang && getLanguage(lang)
-
-    if (!language) return
-    setCode(language.playgroundExample)
-  }, [lang])
+    setCode(example)
+  }, [example])
 
   const options: monaco.IStandaloneEditorConstructionOptions = {
     minimap: {
@@ -74,33 +72,35 @@ export function Playground({ lang, switchLang }: { switchLang: React.ReactNode, 
   }
 
   return (
-    <Layout>
-      <Source>
-        <Editor
-          theme="vs-dark"
-          language="javascript"
-          value={code}
-          onChange={setCode}
-          options={options}
-        />
-        {switchLang}
-        {editor.codeToGraph.status && <CodeError message={editor.codeToGraph.status?.message} placement="right" />}
-      </Source>
-      <Result>
-        <Spin spinning={editor.graphToCode.loading} />
-        <Editor
-          theme="vs-dark"
-          language="javascript"
-          value={editor.code}
-          options={{ readOnly: true, ...options }}
-        />
-        <CopyCode value={editor.executableCode || ''} />
-        {editor.graphToCode.status && <CodeError message={editor.graphToCode.status?.message} placement="right" />}
-      </Result>
-      <Canvas>
-        <Spin spinning={editor.codeToGraph.loading} size="large" />
-        {editor.canvas}
-      </Canvas>
-    </Layout>
+    <Theme>
+      <Layout>
+        <Source>
+          <Editor
+            theme="vs-dark"
+            language="javascript"
+            value={code}
+            onChange={setCode}
+            options={options}
+          />
+          {switchLang}
+          {editor.codeToGraph.status && <CodeError message={editor.codeToGraph.status?.message} placement="right" />}
+        </Source>
+        <Result>
+          <Spin spinning={editor.graphToCode.loading} />
+          <Editor
+            theme="vs-dark"
+            language="javascript"
+            value={editor.code}
+            options={{ readOnly: true, ...options }}
+          />
+          <CopyCode value={editor.executableCode || ''} />
+          {editor.graphToCode.status && <CodeError message={editor.graphToCode.status?.message} placement="right" />}
+        </Result>
+        <Canvas>
+          <Spin spinning={editor.codeToGraph.loading} size="large" />
+          {editor.canvas}
+        </Canvas>
+      </Layout>
+    </Theme>
   )
 }

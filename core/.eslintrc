@@ -2,18 +2,7 @@
   "extends": [
     "./node_modules/rete-cli/.eslintrc"
   ],
-  "parserOptions": {
-    "ecmaFeatures": {
-      "jsx": true
-    }
-  },
-  "globals": {
-    "React": true,
-    "JSX": true
-  },
-  "plugins": [],
   "env": {
-    "es6": true,
     "browser": true
   },
   "rules": {

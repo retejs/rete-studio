@@ -24,6 +24,8 @@ export default <ReteOptions>{
     'antd': 'Antd',
     'monaco-editor': 'MonacoEditor',
     'rete-studio-core': 'ReteStudioCore',
+    'rete-studio-template-lang': 'ReteStudioTemplateLang',
+    'rete-studio-javascript-lang': 'ReteStudioJavaScriptLang',
     'usehooks-ts': 'UseHooksTS',
   },
   plugins: [

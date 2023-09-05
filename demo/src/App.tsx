@@ -3,19 +3,22 @@ import './App.css'
 import { Playground as UIPlayground, Theme } from 'rete-studio-ui'
 import { SwitchLang, useLang } from './Lang'
 import 'rete-studio-ui/styles.css'
+import { getLanguage } from './languages'
 
 function App() {
   const lang = useLang()
-  UIPlayground
-  SwitchLang
-  lang
+
   return (
     <ConfigProvider
       theme={{
         token: Theme.tokens
       }}
     >
-      <UIPlayground lang={lang} switchLang={<SwitchLang />} />
+      <UIPlayground
+        example={getLanguage(lang).playgroundExample}
+        lang={getLanguage(lang)}
+        switchLang={<SwitchLang />}
+      />
     </ConfigProvider>
   )
 }
