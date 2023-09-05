@@ -9,7 +9,7 @@ Rete Studio
 
 Rete Studio is a general-purpose code generation tool powered by Rete.js. Its primary goal is to seamlessly bridge the gap between textual and visual programming languages. With Rete Studio, you can transform a textual programming language into a visual representation, which can then be transformed back into textual language.
 
-![codegen](https://raw.githubusercontent.com/retejs/rete-studio/main/public/codegen.png)
+![codegen](https://raw.githubusercontent.com/retejs/rete-studio/main/assets/codegen.png)
 
 ## Key features
 
