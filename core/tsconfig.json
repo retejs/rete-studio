@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "lib": [
+      "dom"
+    ]
+  },
+  "include": [
+    "src"
+  ]
+}

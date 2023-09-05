@@ -1,0 +1,64 @@
+{
+  "name": "rete-studio",
+  "version": "1.0.0-beta.1",
+  "description": "Rete.js tool",
+  "scripts": {
+    "test:dev": "jest --watchAll",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "author": "Vitaliy Stoliarov",
+  "license": "CC-BY-NC-SA-4.0",
+  "homepage": "https://retejs.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/retejs/rete-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/retejs/rete-studio/issues"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.1.4",
+    "@babel/traverse": "^7.20.10",
+    "@monaco-editor/react": "^4.5.1",
+    "antd": "^5.6.1",
+    "next": "^13.4.19",
+    "overlayscrollbars-react": "^0.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.13.0",
+    "rete": "^2.0.1",
+    "rete-studio-core": "file:../core/rete-studio-core-0.0.0.tgz",
+    "rete-studio-javascript-lang": "file:../languages/javascript/rete-studio-javascript-lang-0.0.0.tgz",
+    "rete-studio-template-lang": "file:../languages/template/rete-studio-template-lang-0.0.0.tgz",
+    "rete-studio-ui": "file:../ui/rete-studio-ui-0.0.0.tgz",
+    "styled-components": "^6.0.0",
+    "typescript": "5.2.2",
+    "usehooks-ts": "^2.9.1",
+    "web-worker": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/babel__traverse": "^7.20.1",
+    "@types/jest": "^29.5.2",
+    "@types/node": "^20.3.1",
+    "@types/react": "^18.2.12",
+    "@types/react-dom": "^18.2.5",
+    "@types/styled-components": "^5.1.26",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "buffer": "^6.0.3",
+    "eslint": "^8.38.0",
+    "eslint-config-next": "13.4.19",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "fs-extra": "^11.1.1",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "process": "^0.11.10",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2"
+  }
+}
