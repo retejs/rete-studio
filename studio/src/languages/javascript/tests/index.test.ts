@@ -3,10 +3,11 @@
  */
 import { describe, it, expect } from '@jest/globals'
 import { NodeEditor } from 'rete'
-import { Schemes, Languages } from 'rete-studio-core'
+import { Schemes } from 'rete-studio-core'
 // import { writeFileSync } from 'fs'
 import { loadExamplesList } from './_utils'
 import { AreaPlugin } from 'rete-area-plugin'
+import { Languages } from '../../../languages'
 // import { join } from 'path'
 
 const initCodePlugin = Languages.javascript.initCodePlugin
