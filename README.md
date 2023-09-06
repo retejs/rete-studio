@@ -22,6 +22,36 @@ Rete Studio is a general-purpose code generation tool powered by Rete.js. Its pr
 
 Currently, JavaScript is the only supported language. Considering the complexity of the transformation process, our current priority is building [a robust application](https://studio.retejs.org/). Once we have fine-tuned our methodologies and algorithms (including different programming languages), we will introduce them as a published plugin for Rete.js.
 
+## Getting started
+
+Before launching the application, make sure to run the following command to install dependencies and build packages
+
+```bash
+bash ./setup.sh
+```
+
+Afterward, you can proceed to the `./demo` directory and launch the application
+
+```bash
+cd ./demo
+npm run dev
+```
+
+## Development
+
+For development purposes, if you intend to make modifications to packages `core`, `ui`, or any within the `languages` folder, you can run the following command
+
+```bash
+npx rete-kit build -f core,ui,languages/template,languages/javascript,demo
+```
+
+it will continuously build and synchronize dependencies.
+Don't forget to restart your application with [clearing the cache](https://vitejs.dev/guide/dep-pre-bundling.html#file-system-cache)
+
+```bash
+ npm run dev -- --force
+```
+
 ## Contribution
 
 Please refer to the [Contribution](https://retejs.org/docs/contribution) guide
