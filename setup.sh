@@ -19,4 +19,3 @@ setupPackage $SCRIPT_DIR/languages/template
 setupPackage $SCRIPT_DIR/languages/javascript
 setupPackage $SCRIPT_DIR/ui
 setupApp $SCRIPT_DIR/demo
-setupApp $SCRIPT_DIR/studio
