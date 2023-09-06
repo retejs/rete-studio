@@ -13,15 +13,14 @@ Rete Studio is a general-purpose code generation tool powered by Rete.js. Its pr
 
 ## Key features
 
-- **Playground**: input your code and check its graph representation
-- **Lab**: debugging tool for code transformation into a graph and back
-- **Editor**: open your local project to edit code visually as a graph
+- **Core**: basic interfaces and methods for graph transformation
+- **Languages**: transformation of specific programming languages into graphs and vice versa
+- **UI**: components for visualizing the node editor and code editor
+- **Demo**: application featuring Playground (shown on the screenshot)
 
 ## Roadmap
 
-Currently, JavaScript is the only supported language. Considering the complexity of the transformation process, our current priority is building a robust application. Once we have fine-tuned our methodologies and algorithms (including different programming languages), we will introduce them as a separate plugin for Rete.js.
-
-**If you believe in the potential of this project to revolutionize the way code generation is approached, you can contribute to its growth through [Sponsorship](https://retejs.org/sponsor) or by making a meaningful contribution in any other way.**
+Currently, JavaScript is the only supported language. Considering the complexity of the transformation process, our current priority is building [a robust application](https://studio.retejs.org/). Once we have fine-tuned our methodologies and algorithms (including different programming languages), we will introduce them as a published plugin for Rete.js.
 
 ## Contribution
 
