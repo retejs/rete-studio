@@ -5,6 +5,7 @@ export default <ReteOptions>{
   name: 'ReteStudioTemplateLang',
   globals: {
     'rete': 'Rete',
-    'rete-area-plugin': 'ReteAreaPlugin'
+    'rete-area-plugin': 'ReteAreaPlugin',
+    'rete-studio-core': 'ReteStudioCore'
   }
 }
