@@ -1,7 +1,0 @@
-0;
-loop528e7d1842d34a45: {
-  1;
-  if (true) continue loop528e7d1842d34a45;
-  break loop528e7d1842d34a45;
-}
-2;

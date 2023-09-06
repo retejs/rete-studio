@@ -1,5 +1,0 @@
-const {
-  a,
-  ...b
-} = n;
-export { a, b };

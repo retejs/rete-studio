@@ -1,8 +1,0 @@
-const a = class A {
-  test = function () {
-    return 1;
-  };
-  constructor(arg) {
-    arg;
-  }
-};

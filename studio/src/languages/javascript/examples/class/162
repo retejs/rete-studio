@@ -1,5 +1,0 @@
-class A extends B {
-  constructor(a) {
-    super(1)
-  }
-}

@@ -1,3 +1,0 @@
-var f = function* f() {
-  yield 1;
-};

@@ -1,2 +1,0 @@
-const A = class A {};
-export { A };

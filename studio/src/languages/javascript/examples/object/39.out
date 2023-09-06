@@ -1,5 +1,0 @@
-const a = {
-  a: function (arg) {
-    return arg;
-  }
-};

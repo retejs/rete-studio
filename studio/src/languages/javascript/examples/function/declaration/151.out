@@ -1,4 +1,0 @@
-var f = function f(arg1, arg2 = true) {
-  return arg;
-};
-1;

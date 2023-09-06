@@ -1,6 +1,0 @@
-0
-while (true) {
-  if (1) { } else { continue }
-  2
-  3
-}

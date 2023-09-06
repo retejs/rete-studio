@@ -1,3 +1,0 @@
-import { h as n } from 'react'
-
-n()

@@ -1,7 +1,0 @@
-const a = 1;
-const b = 2;
-export { a, b };
-const c = 3;
-export { c };
-const d = 4;
-export { d };

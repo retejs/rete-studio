@@ -1,7 +1,0 @@
-switch (n) {
-  case 0:
-  case 1: 1; if (true) break; 11;
-  case 2: 2; break;
-  default: 3
-}
-9

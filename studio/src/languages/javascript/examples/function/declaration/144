@@ -1,9 +1,0 @@
-function f() {
-  var a = 1
-  if (a) {
-    var b = 2
-    return b
-  }
-  return a
-}
-1

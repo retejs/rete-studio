@@ -1,4 +1,0 @@
-function f(arg = true) {
-  return arg
-}
-1

@@ -1,6 +1,0 @@
-loopa182f9ba9f657149: while (false) {
-  "1";
-  if (true) break loopa182f9ba9f657149;
-  1;
-}
-1;

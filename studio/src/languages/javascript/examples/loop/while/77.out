@@ -1,8 +1,0 @@
-0;
-loop7a00b9dd94fc4da4: while (true) {
-  if (true) {
-    2;
-    continue loop7a00b9dd94fc4da4;
-  }
-}
-3;

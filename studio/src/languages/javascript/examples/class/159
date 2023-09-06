@@ -1,5 +1,0 @@
-class A {
-  test(arg) {
-    return arg
-  }
-}

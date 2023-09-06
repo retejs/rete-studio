@@ -1,6 +1,0 @@
-loopc7262fdfe6356242: while (false) {
-  "1";
-  if (true) continue loopc7262fdfe6356242;
-  1;
-}
-1;

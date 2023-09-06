@@ -1,7 +1,0 @@
-1
-for (const key in list) {
-  1
-  if (true) break
-  2
-}
-3

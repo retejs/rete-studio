@@ -1,7 +1,0 @@
-1
-for (const key in list) {
-  1
-  if (key) continue
-  2
-}
-3

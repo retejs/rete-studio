@@ -1,4 +1,0 @@
-try {
-  1
-} catch (e) {}
-var n = 0

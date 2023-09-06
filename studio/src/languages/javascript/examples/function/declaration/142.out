@@ -1,5 +1,0 @@
-const f = (arg1, {
-  a
-}) => {
-  return a;
-};

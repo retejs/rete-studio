@@ -1,1 +1,0 @@
-import N, { N2 } from 'dep'

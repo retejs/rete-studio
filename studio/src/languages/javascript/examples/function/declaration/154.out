@@ -1,4 +1,0 @@
-var f = async function f() {
-  await f();
-};
-1;

@@ -1,8 +1,0 @@
-const A = class A {
-  constructor(a, b) {
-    1;
-    2;
-    3;
-  }
-};
-const a = new A(1, 2);

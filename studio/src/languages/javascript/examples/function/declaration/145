@@ -1,8 +1,0 @@
-function a(arg) {
-  function b() {
-    function c() {
-      return arg
-    }
-  }
-}
-1

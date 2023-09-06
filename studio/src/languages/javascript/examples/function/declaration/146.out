@@ -1,4 +1,0 @@
-var a = function a() {
-  a();
-};
-1;

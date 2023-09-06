@@ -1,3 +1,0 @@
-const A = class A {
-  test = function () {};
-};

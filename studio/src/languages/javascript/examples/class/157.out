@@ -1,4 +1,0 @@
-const A = class A {
-  constructor(a) {}
-};
-1;

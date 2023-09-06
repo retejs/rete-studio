@@ -1,6 +1,0 @@
-for (; false;) {
-  '1'
-  if (true) break
-  1
-}
-1

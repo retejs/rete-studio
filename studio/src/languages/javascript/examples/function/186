@@ -1,1 +1,0 @@
-function a1(arg) { function a1(arg) { return arg } return arg }

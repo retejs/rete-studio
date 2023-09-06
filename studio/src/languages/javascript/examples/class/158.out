@@ -1,5 +1,0 @@
-const A = class A {
-  constructor() {
-    this.test();
-  }
-};

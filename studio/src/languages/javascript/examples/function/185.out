@@ -1,7 +1,0 @@
-var a = function a(arg) {
-  b();
-};
-var b = function b(arg) {
-  return arg;
-};
-a(1);

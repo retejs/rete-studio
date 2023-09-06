@@ -1,6 +1,0 @@
-var a1 = function a1(arg) {
-  var a1 = function a1(arg) {
-    return arg;
-  };
-  return arg;
-};

@@ -1,5 +1,0 @@
-const i = 5
-for (let i = 0, n = 0; i < 0; i++) {
-  i
-}
-1

@@ -1,7 +1,0 @@
-let i = 0;
-loopbcfcd162933d8295: {
-  console.log(i);
-  i++;
-  if (i < 10) continue loopbcfcd162933d8295;
-  break loopbcfcd162933d8295;
-}

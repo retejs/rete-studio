@@ -1,2 +1,0 @@
-const err = "error";
-throw err;
