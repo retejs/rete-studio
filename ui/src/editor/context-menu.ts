@@ -1,7 +1,8 @@
-import { BaseSchemes } from 'rete';
-import { Presets } from 'rete-context-menu-plugin';
+import { NodeEditor } from 'rete';
+import { AreaPlugin } from 'rete-area-plugin'
 import { Item, Items } from 'rete-context-menu-plugin/_types/types';
-import { LanguageSnippet } from 'rete-studio-core';
+import { LanguageSnippet, Schemes } from 'rete-studio-core';
+import { applyDI } from './di';
 
 function snippetToItem(snippet: LanguageSnippet, add: (code: string) => unknown | Promise<unknown>): Item {
 
@@ -24,15 +25,57 @@ function snippetToItem(snippet: LanguageSnippet, add: (code: string) => unknown 
   }
 }
 
+export function items(snippets: LanguageSnippet[], add: (code: string) => unknown | Promise<unknown>) {
+  return <Items<Schemes>>(function (context, plugin) {
+    const area = plugin.parentScope<AreaPlugin<Schemes, any>>(AreaPlugin)
+    const editor = area.parentScope<NodeEditor<Schemes>>(NodeEditor)
 
-export function items(snippets: LanguageSnippet[], add: (code: string) => unknown | Promise<unknown>): Items<BaseSchemes> {
-  return (context, plugin) => {
     if (context === 'root') {
       return {
         searchBar: true,
         list: snippets.map(snippet => snippetToItem(snippet, add))
       }
     }
-    return Presets.classic.setup([])(context, plugin)
-  }
+
+
+    const deleteItem: Item = {
+      label: 'Delete',
+      key: 'delete',
+      async handler() {
+        const nodeId = context.id
+        const connections = editor.getConnections().filter(c => {
+          return c.source === nodeId || c.target === nodeId
+        })
+
+        for (const connection of connections) {
+          await editor.removeConnection(connection.id)
+        }
+        await editor.removeNode(nodeId)
+      }
+    }
+
+    const clone = context.clone
+    const cloneItem: undefined | Item = clone && {
+      label: 'Clone',
+      key: 'clone',
+      async handler() {
+        const node = clone()
+
+        await editor.addNode(node)
+
+
+        applyDI(editor, area)
+
+        area.translate(node.id, area.area.pointer)
+      }
+    }
+
+    return {
+      searchBar: false,
+      list: [
+        deleteItem,
+        ...(cloneItem ? [cloneItem] : [])
+      ]
+    }
+  })
 }
