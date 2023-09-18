@@ -9,6 +9,7 @@ function setupPackage {
 
 function setupApp {
   cd $1
+  rm -f package-lock.json
   npm i
 }
 
