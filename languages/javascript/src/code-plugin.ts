@@ -155,14 +155,8 @@ export function initCodePlugin() {
     }
   })
 
-  async function toGraph(ast: BabelType.File, imported?: () => void) {
-    await code.toGraph(ast, async () => {
-      // const processed = Array.from(processedTypes)
-
-      // console.log('total types', processed)
-      // console.log('unhandled', BabelType.STANDARDIZED_TYPES.filter(t => ![...unsupportedTypes, ...processed].includes(t)))
-      imported && imported()
-    })
+  async function toGraph(ast: BabelType.File) {
+    await code.toGraph(ast)
   }
 
   async function toAST() {

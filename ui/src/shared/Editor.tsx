@@ -55,7 +55,7 @@ export function useEditor(props: { lang: Language<any, any, any>, code: string |
 
   useEffect(() => {
     if (code && editor) {
-      editor.toExecutable(code).then(setExecutableCode)
+      editor.codeToExecutable(code).then(setExecutableCode)
     } else setExecutableCode(undefined)
   }, [code, editor])
 
@@ -64,7 +64,7 @@ export function useEditor(props: { lang: Language<any, any, any>, code: string |
       if (!editor || !props.code) return
       await Promise.all([
         delay(400),
-        editor.loadCode(props.code)
+        editor.codeToGraph(props.code)
       ])
     },
     fail: () => editor?.clear()
@@ -75,7 +75,7 @@ export function useEditor(props: { lang: Language<any, any, any>, code: string |
 
       const [, code] = await Promise.all([
         delay(400),
-        editor.toCode()
+        editor.graphToCode()
       ])
 
       setCode(code)
@@ -98,13 +98,6 @@ export function useEditor(props: { lang: Language<any, any, any>, code: string |
     graphToCode,
     code,
     executableCode,
-    maxStep: editor?.maxStep,
-    stepNames: editor?.stepNames || [],
-    getCurrentStep: () => editor?.getCurrentStep() ?? -1,
-    startStepByStep: editor?.startStepByStep,
-    currentGraphToCode: editor?.currentGraphToCode,
-    stepDown: editor?.stepDown,
-    stepUp: editor?.stepUp,
     canvas: (
       <Theme>
         <Tooltip placement="bottom" title="To code">

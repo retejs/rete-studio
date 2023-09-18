@@ -23,7 +23,7 @@ export type Language<ParseResult, N extends { type: string }, F extends N> = {
     }
     unsupportedTypes: string[]
     processedTypes: Set<string>
-    toGraph: (ast: F, imported?: () => void) => Promise<void>
+    toGraph: (ast: F) => Promise<void>
     toAST: () => Promise<F>
   }
 }

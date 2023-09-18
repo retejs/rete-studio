@@ -79,10 +79,8 @@ export function initCodePlugin() {
     }
   })
 
-  async function toGraph(ast: any, imported?: () => void) {
-    await code.toGraph(ast, async () => {
-      imported && imported()
-    })
+  async function toGraph(ast: any) {
+    await code.toGraph(ast)
   }
 
   async function toAST() {
