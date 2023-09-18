@@ -1,27 +1,35 @@
 import { ClassicPreset, NodeId } from 'rete'
 import { BIND_KEY } from './core'
+import { socket, Socket } from './sockets'
+import { Schemes } from './types'
+export { socket, Socket }
 
 export class InsertControl extends ClassicPreset.Control {
-  constructor(public options: { nodeId: NodeId, onClick: (control: InsertControl) => void }) {
+  // TODO improve DI
+  public node?: Schemes['Node']
+  public onUpdateNode?: () => void
+
+  constructor(public options: { onClick: (control: InsertControl) => void }) {
     super()
   }
 
-  clone(nodeId?: NodeId) {
+  clone() {
     return new InsertControl({
-      nodeId: nodeId || this.options.nodeId,
       onClick: this.options.onClick
     })
   }
 }
 
 export class SelectControl extends ClassicPreset.Control {
-  constructor(public value: string, public options: { value: string, label: string }[], public onChange: (value: string) => void) {
+  public node?: Schemes['Node']
+
+  constructor(public value: string, public options: { value: string, label: string }[], public onChange: (value: string, control: SelectControl) => void) {
     super()
   }
 
   change(key: string) {
     this.value = key
-    this.onChange(key)
+    this.onChange(key, this)
   }
 
   clone() {
@@ -29,8 +37,6 @@ export class SelectControl extends ClassicPreset.Control {
   }
 }
 
-import { socket, Socket } from './sockets'
-export { socket, Socket }
 
 export class RefSocket extends Socket {
   isRef = true
@@ -62,13 +68,14 @@ export const inputTypes: { label: string, value: InputType }[] = [
 ]
 
 export class InputControl extends ClassicPreset.InputControl<'text' | 'number'> {
+  public node?: Schemes['Node']
+
   constructor(public options?: {
     type: InputType,
     readonly?: boolean
     initial?: string | number
     change?: (value: string | number) => void
-    allowedTypes?: InputType[],
-    nodeId?: NodeId // TODO dependency injection
+    allowedTypes?: InputType[]
   }) {
     super('text', options)
   }
@@ -79,14 +86,13 @@ export class InputControl extends ClassicPreset.InputControl<'text' | 'number'> 
     super.setValue(type === 'number' && typeof value !== 'undefined' ? +value : value)
   }
 
-  clone(nodeId?: NodeId) {
+  clone() {
     return new InputControl({
       type: this.options?.type || 'text',
       readonly: this.readonly,
       initial: this.value,
       allowedTypes: this.options?.allowedTypes ? [...this.options.allowedTypes] : undefined,
-      change: this.options?.change,
-      nodeId
+      change: this.options?.change
     })
   }
 }
@@ -192,7 +198,7 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
         clone.index = inp.index
         if (inp.control) {
           if (!('clone' in inp.control)) throw new Error('Input control must implement clone method')
-          clone.control = (inp.control as any).clone(n.id)
+          clone.control = (inp.control as any).clone()
         }
         n.addInput(k, clone)
       }
@@ -205,7 +211,7 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
         clone.index = out.index
         if (out.control) {
           if (!('clone' in out.control)) throw new Error('Output control must implement clone method')
-          clone.control = (out.control as any).clone(n.id)
+          clone.control = (out.control as any).clone()
         }
         n.addOutput(k, clone)
       }
@@ -215,7 +221,7 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
       if (control && !n.hasControl(k)) {
         if (!('clone' in control)) throw new Error('Control must implement clone method')
 
-        n.addControl(k, (control as any).clone(n.id))
+        n.addControl(k, (control as any).clone())
       }
     })
     n.type = this.type

@@ -18,10 +18,11 @@ import { Drag as AreaDrag } from 'rete-area-plugin';
 import { HistoryExtensions, HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin'
 import { items as contextMenuItems } from './context-menu'
 import * as UI from './ui'
+import { applyDI } from './di'
 
-type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
+export type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
 
-export async function createEditor<ParseResult, N extends { type: string }, F extends N>(container: HTMLElement, language: Language<AreaExtra, ParseResult, N, F>) {
+export async function createEditor<ParseResult, N extends { type: string }, F extends N>(container: HTMLElement, language: Language<ParseResult, N, F>) {
   const editor = new NodeEditor<Schemes>()
   const area = new AreaPlugin<Schemes, AreaExtra>(container)
   const connection = new ConnectionPlugin<Schemes, AreaExtra>()
@@ -31,7 +32,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
       const tempEditor = new NodeEditor<Schemes>()
       const tempArea = new AreaPlugin<Schemes, AreaExtra>(document.createElement('div'))
       const arrange = createArrangePlugin()
-      const { code: plugin, toGraph, astTools } = language.initCodePlugin(editor, area)
+      const { code: plugin, toGraph, astTools } = language.initCodePlugin()
 
       tempEditor.use(plugin)
       tempEditor.use(tempArea)
@@ -50,6 +51,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
       for (const connection of graph.connections()) {
         await editor.addConnection(connection)
       }
+      applyDI(editor, area)
       console.log(tempArea)
     })
   })
@@ -249,7 +251,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
 
   area.use(scopes)
 
-  const { code, toAST, toGraph, astTools } = language.initCodePlugin(editor, area)
+  const { code, toAST, toGraph, astTools } = language.initCodePlugin()
 
   editor.use(code)
 
@@ -281,6 +283,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
     await toGraph(ast, async () => {
       console.log(await layout(editor, arrange))
     })
+    applyDI(editor, area)
   }
 
 
@@ -364,7 +367,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
       const item = examples.find(ex => ex.path === path)
 
       if (!item) throw new Error('Example not found')
-      const ast = prepareAst(item.input)
+      const ast = await prepareAst(item.input)
       await code.applyAST(ast)
       await layout(editor, arrange)
     },

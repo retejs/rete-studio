@@ -55,7 +55,7 @@ const Canvas = styled(Area)`
   position: relative;
 `
 
-export function Playground({ lang, example, switchLang }: { switchLang: React.ReactNode, example: string, lang: Language<any, any, any, any> }) {
+export function Playground({ lang, example, switchLang }: { switchLang: React.ReactNode, example: string, lang: Language<any, any, any> }) {
   const [code, setCode] = useState<string | undefined>()
   const debouncedCode = useDebounce(code, 500)
   const editor = useEditor({ lang, code: debouncedCode })

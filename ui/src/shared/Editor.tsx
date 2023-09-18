@@ -45,7 +45,7 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
   }
 }
 
-export function useEditor(props: { lang: Language<any, any, any, any>, code: string | undefined, autoCode?: boolean }) {
+export function useEditor(props: { lang: Language<any, any, any>, code: string | undefined, autoCode?: boolean }) {
   const create = useCallback((container: HTMLElement) => {
     return createEditor(container, props.lang)
   }, [createEditor, props.lang])

@@ -2,8 +2,7 @@
 import generate from '@babel/generator'
 import { parse, ParserOptions } from '@babel/parser'
 import * as BabelType from '@babel/types'
-import { ClassicPreset, NodeEditor } from 'rete'
-import { AreaPlugin } from 'rete-area-plugin'
+import { ClassicPreset } from 'rete'
 import { BaseNode, BaseOptions, CodePlugin, Connection, Output, Schemes, socket } from 'rete-studio-core'
 
 import { applyAstReverseTransformations, applyAstTransformations, makePurifiedExecutable } from './ast'
@@ -72,7 +71,7 @@ export const astTools = {
   }
 }
 
-export function initCodePlugin<K>(editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, K>) {
+export function initCodePlugin() {
   const processedTypes = new Set<string>()
   const unsupportedTypes = [
     'ClassPrivateProperty', 'ClassPrivateMethod', 'PrivateName', 'WithStatement',
@@ -104,7 +103,7 @@ export function initCodePlugin<K>(editor: NodeEditor<Schemes>, area: AreaPlugin<
       new CleanUpPorts(),
       new MarkFrames(),
       new MarkControlSockets(),
-      new AddControls(editor, area),
+      new AddControls(),
       new Rename()
     ],
     up: {

@@ -1,5 +1,3 @@
-import { NodeEditor } from 'rete'
-import { AreaPlugin } from 'rete-area-plugin'
 import { CodePlugin } from '../core'
 import { Schemes } from '../types'
 
@@ -11,10 +9,10 @@ export type LanguageSnippet = {
   subitems: LanguageSnippet[]
 }
 
-export type Language<K, ParseResult, N extends { type: string }, F extends N> = {
+export type Language<ParseResult, N extends { type: string }, F extends N> = {
   playgroundExample: string,
   snippets: LanguageSnippet[],
-  initCodePlugin: (editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, K>) => {
+  initCodePlugin: () => {
     code: CodePlugin<Schemes, N>
     astTools: {
       parse(code: string): Promise<ParseResult>
