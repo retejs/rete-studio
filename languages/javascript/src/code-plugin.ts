@@ -49,7 +49,7 @@ const base: BaseOptions<Schemes> = {
 }
 
 export const astTools = {
-  parse(code: string) {
+  async parse(code: string) {
     const parserOptions: ParserOptions = {
       sourceType: 'module',
       strictMode: false,
@@ -58,16 +58,16 @@ export const astTools = {
 
     return parse(code, parserOptions)
   },
-  generate(ast: BabelType.File) {
+  async generate(ast: BabelType.File) {
     return generate(ast).code
   },
-  purify(ast: BabelType.File) {
+  async purify(ast: BabelType.File) {
     return applyAstTransformations(ast)
   },
-  unpurify(ast: BabelType.File) {
+  async unpurify(ast: BabelType.File) {
     return applyAstReverseTransformations(ast)
   },
-  executable(ast: BabelType.File) {
+  async executable(ast: BabelType.File) {
     return makePurifiedExecutable(BabelType.cloneNode(ast))
   }
 }

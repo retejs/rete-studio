@@ -37,7 +37,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
       tempEditor.use(tempArea)
       tempArea.use(arrange)
 
-      const ast = astTools.purify(astTools.parse(code))
+      const ast = await astTools.purify(await astTools.parse(code))
 
       await layout(tempEditor, arrange)
       await toGraph(ast)
@@ -260,23 +260,23 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
     layout(editor, arrange)
   }
 
-  function prepareAst(code: string) {
+  async function prepareAst(code: string) {
     console.log('[AST]', astTools.parse(code));
 
-    const ast = astTools.purify(astTools.parse(code))
+    const ast = await astTools.purify(await astTools.parse(code))
 
-    console.log('[purified]', astTools.generate(ast))
+    console.log('[purified]', await astTools.generate(ast))
     console.log('[purified AST]', ast);
 
-    const executableAst = astTools.executable(ast)
-    console.log('[executable]', astTools.generate(executableAst))
+    const executableAst = await astTools.executable(ast)
+    console.log('[executable]', await astTools.generate(executableAst))
     console.log('[executable AST]', executableAst);
 
     return ast
   }
 
   async function loadCode(code: string) {
-    const ast = prepareAst(code)
+    const ast = await prepareAst(code)
 
     await toGraph(ast, async () => {
       console.log(await layout(editor, arrange))
@@ -387,10 +387,10 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
 
       return generatedCode
     },
-    toExecutable(code: string) {
-      const ast = astTools.purify(astTools.parse(code))
+    async toExecutable(code: string) {
+      const ast = await astTools.purify(await astTools.parse(code))
 
-      return astTools.generate(astTools.executable(ast))
+      return astTools.generate(await astTools.executable(ast))
     },
     clear: () => editor.clear(),
     destroy: () => area.destroy()

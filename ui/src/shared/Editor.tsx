@@ -1,5 +1,5 @@
 import React from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CodeFilled, LayoutFilled } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
 import styled from 'styled-components'
@@ -51,7 +51,14 @@ export function useEditor(props: { lang: Language<any, any, any, any>, code: str
   }, [createEditor, props.lang])
   const [ref, editor] = useRete(create)
   const [code, setCode] = useState<string | undefined>()
-  const executableCode = useMemo(() => code && editor?.toExecutable(code), [code, editor])
+  const [executableCode, setExecutableCode] = useState<undefined | string>()
+
+  useEffect(() => {
+    if (code && editor) {
+      editor.toExecutable(code).then(setExecutableCode)
+    } else setExecutableCode(undefined)
+  }, [code, editor])
+
   const codeToGraph = useTask({
     async execute() {
       if (!editor || !props.code) return

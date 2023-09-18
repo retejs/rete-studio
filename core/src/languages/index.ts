@@ -17,11 +17,11 @@ export type Language<K, ParseResult, N extends { type: string }, F extends N> = 
   initCodePlugin: (editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, K>) => {
     code: CodePlugin<Schemes, N>
     astTools: {
-      parse(code: string): ParseResult
-      generate(ast: N): string
-      purify(ast: ParseResult): F
-      unpurify(ast: F): F
-      executable(ast: F): F
+      parse(code: string): Promise<ParseResult>
+      generate(ast: N): Promise<string>
+      purify(ast: ParseResult): Promise<F>
+      unpurify(ast: F): Promise<F>
+      executable(ast: F): Promise<F>
     }
     unsupportedTypes: string[]
     processedTypes: Set<string>
