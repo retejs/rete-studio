@@ -4,12 +4,9 @@ import { AreaPlugin, AreaExtensions } from 'rete-area-plugin'
 import { ConnectionPlugin, Presets as ConnectionPresets } from 'rete-connection-plugin'
 import { ReactArea2D, ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin'
 import { ContextMenuPlugin, ContextMenuExtra } from 'rete-context-menu-plugin'
-import { ArrangeAppliers, AutoArrangePlugin, Presets as ArrangePresets } from 'rete-auto-arrange-plugin'
 import { ScopesPlugin, Presets as ScopePresets } from 'rete-scopes-plugin'
-import { Schemes, Language, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl } from 'rete-studio-core'
-import { groupStatements } from './layout'
-import { areConnected } from './utils'
-import { ElkNode } from 'elkjs'
+import { Schemes, LanguageAdapter, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl, LanguageSnippet, serialize } from 'rete-studio-core'
+import { areConnected, debugNodes } from './utils'
 import { structures } from 'rete-structures'
 import { useInnerPorts } from './inner-ports'
 import { addCustomBackground } from './custom-background'
@@ -18,39 +15,55 @@ import { Drag as AreaDrag } from 'rete-area-plugin';
 import { HistoryExtensions, HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin'
 import { items as contextMenuItems } from './context-menu'
 import * as UI from './ui'
+import { createArrangePlugin, innerPortWidth, layout, padding } from './layout'
+import { deserialize, applyInteraction } from 'rete-studio-core'
 
-type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
+export type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
 
-export async function createEditor<ParseResult, N extends { type: string }, F extends N>(container: HTMLElement, language: Language<AreaExtra, ParseResult, N, F>) {
+
+async function graphFromCode(code: string, language: LanguageAdapter, editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>) {
+  const data = await language.codeToGraph(code)
+
+  await editor.clear()
+  await deserialize(editor, data)
+
+  applyInteraction(editor, id => area.update('node', id))
+}
+
+export async function createEditor(container: HTMLElement, snippets: LanguageSnippet[], language: LanguageAdapter) {
   const editor = new NodeEditor<Schemes>()
   const area = new AreaPlugin<Schemes, AreaExtra>(container)
   const connection = new ConnectionPlugin<Schemes, AreaExtra>()
   const reactPlugin = new ReactPlugin<Schemes, AreaExtra>({ createRoot })
   const contextMenu = new ContextMenuPlugin<Schemes>({
-    items: contextMenuItems(language.snippets, async code => {
+    items: contextMenuItems(snippets, async code => {
       const tempEditor = new NodeEditor<Schemes>()
       const tempArea = new AreaPlugin<Schemes, AreaExtra>(document.createElement('div'))
-      const arrange = createArrangePlugin()
-      const { code: plugin, toGraph, astTools } = language.initCodePlugin(editor, area)
+      const arrange = createArrangePlugin(tempEditor, innerPorts)
 
-      tempEditor.use(plugin)
       tempEditor.use(tempArea)
       tempArea.use(arrange)
 
-      const ast = astTools.purify(astTools.parse(code))
+      await graphFromCode(code, language, tempEditor, tempArea)
+      await layout(tempEditor, area, arrange, innerPorts)
 
-      await layout(tempEditor, arrange)
-      await toGraph(ast)
-
-      const graph = structures(tempEditor) // .filter(node => !(node.type === 'statement' && node.label === 'Expression'))
+      const graph = structures(tempEditor)
 
       for (const node of graph.nodes()) {
         await editor.addNode(node.clone(true))
+        const view = tempArea.nodeViews.get(node.id)
+
+        if (view) {
+          area.translate(node.id, {
+            x: area.area.pointer.x + view.position.x,
+            y: area.area.pointer.y + view.position.y
+          })
+        }
       }
       for (const connection of graph.connections()) {
         await editor.addConnection(connection)
       }
-      console.log(tempArea)
+      applyInteraction(editor, id => area.update('node', id))
     })
   })
   const history = new HistoryPlugin()
@@ -71,41 +84,25 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
     move: () => true
   }))
 
+  editor.use(area)
 
-  function ignoreLoopConnections(connection: Schemes['Connection']) {
-    return !connection.isLoop
-  }
+  const innerPorts = useInnerPorts(area, {
+    hasLeftPort(node) {
+      return Boolean(node.frame?.left)
+    },
+    hasRightPort(node) {
+      return Boolean(node.frame?.right)
+    },
+    isLeftPort(node) {
+      return ['Entry'].includes(node.label)
+    },
+    isRightPort(node) {
+      return ['ClassBody'].includes(node.label)
+    },
+    padding
+  })
 
-  function createArrangePlugin() {
-    const arrange = new AutoArrangePlugin<Schemes, AreaExtra>()
-
-
-    const arrangePreset = ArrangePresets.classic.setup()
-
-    arrange.addPreset(args => {
-      const data = arrangePreset(args)
-
-      return data && {
-        ...data,
-        options(id) {
-          const node = editor.getNode(id)
-          if (!node) return {
-            'elk.padding': ''
-          }
-          const hasLeftInnerPorts = innerPorts.hasLeftPort(node)
-          const hasRightInnerPorts = innerPorts.hasRightPort(node)
-
-          return {
-            'elk.padding': `[left=${(hasLeftInnerPorts ? innerPortWidth : 0) + padding.left}, top=${padding.top}, right=${(hasRightInnerPorts ? innerPortWidth : 0) + padding.right}, bottom=${padding.bottom}]`
-          }
-        }
-      }
-    })
-
-    return arrange
-  }
-
-  const arrange = createArrangePlugin()
+  const arrange = createArrangePlugin(editor, innerPorts)
 
   // debugId(area)
   addCustomBackground(area)
@@ -192,37 +189,11 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
   // AreaExtensions.snapGrid(area, { size: 20, dynamic: true })
 
 
-  editor.use(area)
   area.use(contextMenu)
   area.use(reactPlugin)
   area.use(connection)
   area.use(arrange)
   area.use(history)
-
-
-  const padding = {
-    top: 40,
-    left: 50,
-    right: 50,
-    bottom: 20
-  }
-  const innerPortWidth = 200
-
-  const innerPorts = useInnerPorts(area, {
-    hasLeftPort(node) {
-      return Boolean(node.frame?.left)
-    },
-    hasRightPort(node) {
-      return Boolean(node.frame?.right)
-    },
-    isLeftPort(node) {
-      return ['Entry'].includes(node.label)
-    },
-    isRightPort(node) {
-      return ['ClassBody'].includes(node.label)
-    },
-    padding
-  })
 
   const scopes = new ScopesPlugin<Schemes>({
     exclude: (id) => innerPorts.isInnerPort(editor.getNode(id)),
@@ -249,98 +220,9 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
 
   area.use(scopes)
 
-  const { code, toAST, toGraph, astTools } = language.initCodePlugin(editor, area)
+  debugNodes(editor, area)
 
-  editor.use(code)
-
-  function update() {
-    editor.getNodes().forEach(async node => {
-      await area.update('node', node.id)
-    })
-    layout(editor, arrange)
-  }
-
-  function prepareAst(code: string) {
-    console.log('[AST]', astTools.parse(code));
-
-    const ast = astTools.purify(astTools.parse(code))
-
-    console.log('[purified]', astTools.generate(ast))
-    console.log('[purified AST]', ast);
-
-    const executableAst = astTools.executable(ast)
-    console.log('[executable]', astTools.generate(executableAst))
-    console.log('[executable AST]', executableAst);
-
-    return ast
-  }
-
-  async function loadCode(code: string) {
-    const ast = prepareAst(code)
-
-    await toGraph(ast, async () => {
-      console.log(await layout(editor, arrange))
-    })
-  }
-
-
-  class A extends ArrangeAppliers.StandardApplier<Schemes, AreaExtra> {
-    public async apply(nodes: ElkNode[], offset = { x: 0, y: 0 }) {
-      const correctNodes = this.getValidShapes(nodes)
-
-      await Promise.all(correctNodes.map(async ({ id, x, y, width, height, children }) => {
-        await Promise.all([
-          this.resizeNode(id, width, height),
-          this.translateNode(id, offset.x + x, offset.y + y)
-        ])
-
-        if (children) {
-          await this.apply(children, { x: offset.x + x, y: offset.y + y })
-        }
-      }))
-    }
-  }
-
-  async function layout(editor: NodeEditor<Schemes>, arrange: AutoArrangePlugin<Schemes, AreaExtra>) {
-    console.time('layout')
-    const graph = structures(editor).filter(node => !innerPorts.isInnerPort(node), ignoreLoopConnections)
-
-
-    graph.nodes().forEach(node => {
-      if (innerPorts.hasInnerPorts(node)) {
-        node.width = Math.max(node.width, 400)
-        node.height = Math.max(node.height, 200)
-      }
-    })
-
-    const result = await arrange.layout({
-      nodes: // graph.nodes(), //
-        groupStatements(graph.nodes(), graph.connections()),
-      connections: graph.connections(),
-      applier: new A()
-    })
-
-    await AreaExtensions.zoomAt(area, editor.getNodes())
-    console.timeEnd('layout')
-
-    return result
-  }
-
-  area.addPipe(context => {
-    if (context.type === 'nodepicked') {
-      const node = editor.getNode(context.data.id)
-
-      if (node.label === 'NumericLiteral') {
-        console.log(node.data.value, node.type);
-      } else {
-        console.log(node.data, node.type, node)
-      }
-
-    }
-    return context
-  })
-
-  editor.addPipe(c => { // Pro example
+  editor.addPipe(c => {
     if (c.type === 'connectioncreate') {
       if (areConnected(editor, c.data.target, c.data.source)) c.data.isLoop = true
     }
@@ -348,50 +230,20 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
   })
 
   return {
-    getCurrentStep: () => code.getCurrentStep(),
-    maxStep: code.getTransformers().length - 1,
-    stepNames: code.getTransformers().map(t => t.name),
-    loadCode,
-    stepUp: async () => {
-      await code.step(1)
-      update()
+    async codeToGraph(code: string) {
+      await graphFromCode(code, language, editor, area)
+      console.log('layout:', await layout(editor, area, arrange, innerPorts, true))
     },
-    stepDown: async () => {
-      await code.step(-1)
-      update()
+    async graphToCode() {
+      const data = serialize(editor)
+      const code = await language.graphToCode(data)
+
+      return code
     },
-    startStepByStep: async (path: string, examples: { path: string, input: string }[]) => {
-      const item = examples.find(ex => ex.path === path)
-
-      if (!item) throw new Error('Example not found')
-      const ast = prepareAst(item.input)
-      await code.applyAST(ast)
-      await layout(editor, arrange)
+    async codeToExecutable(code: string) {
+      return language.codeToExecutable(code)
     },
-    currentGraphToCode: async () => {
-      const ast = await code.retrieveAST()
-      const generatedCode = astTools.generate(ast)
-
-      console.log(ast)
-      console.log(generatedCode)
-
-      return generatedCode
-    },
-    layout: () => layout(editor, arrange),
-    toCode: async () => {
-      const ast = await toAST()
-      const generatedCode = astTools.generate(ast)
-
-      console.log(ast)
-      console.log(generatedCode)
-
-      return generatedCode
-    },
-    toExecutable(code: string) {
-      const ast = astTools.purify(astTools.parse(code))
-
-      return astTools.generate(astTools.executable(ast))
-    },
+    layout: () => layout(editor, area, arrange, innerPorts, true),
     clear: () => editor.clear(),
     destroy: () => area.destroy()
   }

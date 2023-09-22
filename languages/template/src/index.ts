@@ -24,7 +24,7 @@ const base: BaseOptions<Schemes> = {
 }
 
 export const astTools = {
-  parse(code: string) {
+  async parse(code: string) {
     code
     return {
       type: 'TestRoot',
@@ -33,17 +33,17 @@ export const astTools = {
       }
     }
   },
-  generate(ast: any) {
+  async generate(ast: any) {
     ast
     return '// any code'
   },
-  purify(ast: any) {
+  async purify(ast: any) {
     return ast
   },
-  unpurify(ast: any) {
+  async unpurify(ast: any) {
     return ast
   },
-  executable(ast: any) {
+  async executable(ast: any) {
     return ast
   }
 }
@@ -79,10 +79,8 @@ export function initCodePlugin() {
     }
   })
 
-  async function toGraph(ast: any, imported?: () => void) {
-    await code.toGraph(ast, async () => {
-      imported && imported()
-    })
+  async function toGraph(ast: any) {
+    await code.toGraph(ast)
   }
 
   async function toAST() {

@@ -1,10 +1,10 @@
-import { socket } from '../sockets'
+import { Socket, socket } from '../sockets'
 import { ClassicSchemes } from '../types'
 import { copyToEditor } from '../utils'
 import { NodeEditor, ClassicPreset, Scope, Root } from 'rete'
 import { structures } from 'rete-structures'
 import { Transformer } from './transformer'
-import { Output, Socket } from '../nodes'
+import { Output } from '../nodes'
 
 export {
     Transformer
@@ -178,7 +178,7 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         await this.copy(tempEditor, this.editor)
     }
 
-    async toGraph(ast: ASTNode, imported?: () => void) {
+    async toGraph(ast: ASTNode) {
         const { transformers } = this.options
         const tempEditor = new NodeEditor<Schemes>()
 
@@ -197,7 +197,6 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
                 // console.log('End up:', transformer.name);
             } catch (e) {
                 await this.copy(tempEditor, this.editor)
-                imported?.()
                 throw e
                 // console.error('Simplify: ', e, '\n\nat', transformer)
             }
@@ -205,7 +204,6 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         // console.timeEnd('simplify')
 
         await this.copy(tempEditor, this.editor)
-        imported?.()
     }
 
     private nodeIntoAST<N extends ASTNode>(node: Schemes['Node'], context: ToASTContext<ASTNode, Schemes>): N {

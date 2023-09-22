@@ -108,7 +108,7 @@ export function Node<Scheme extends Schemes>(props: Props<Scheme>) {
     sortByIndex(controls)
 
     return (
-        <NodeStyles selected={selected} width={props.data.width} height={props.data.height} styles={props.styles}>
+        <NodeStyles selected={selected} style={{ width: props.data.width, height: props.data.height }} styles={props.styles}>
             {/* <div style={{ position: 'absolute', top: '-1em', right: '1em' }}>{props.data.id}</div> */}
             <div className="glossy"></div>
             <div className="title">{props.data.label}</div>

@@ -1,12 +1,12 @@
 import React from 'react'
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CodeFilled, LayoutFilled } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
 import styled from 'styled-components'
 import { useRete } from 'rete-react-plugin';
 import { createEditor } from '../editor'
 import { delay } from '../delay';
-import { Language } from 'rete-studio-core';
+import { LanguageAdapter, LanguageSnippet } from 'rete-studio-core';
 import { Theme } from '../theme';
 
 const SaveButton = styled(Button)`
@@ -45,19 +45,31 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
   }
 }
 
-export function useEditor(props: { lang: Language<any, any, any, any>, code: string | undefined, autoCode?: boolean }) {
+export function useEditor(props: { lang: LanguageAdapter, code: string | undefined, autoCode?: boolean }) {
+  const [snippets, setSnippets] = useState<LanguageSnippet[]>([])
   const create = useCallback((container: HTMLElement) => {
-    return createEditor(container, props.lang)
-  }, [createEditor, props.lang])
+    return createEditor(container, snippets, props.lang)
+  }, [createEditor, snippets, props.lang])
   const [ref, editor] = useRete(create)
   const [code, setCode] = useState<string | undefined>()
-  const executableCode = useMemo(() => code && editor?.toExecutable(code), [code, editor])
+  const [executableCode, setExecutableCode] = useState<undefined | string>()
+
+  useEffect(() => {
+    props.lang.getSnippets().then(setSnippets)
+  }, [props.lang])
+
+  useEffect(() => {
+    if (code && editor) {
+      editor.codeToExecutable(code).then(setExecutableCode)
+    } else setExecutableCode(undefined)
+  }, [code, editor])
+
   const codeToGraph = useTask({
     async execute() {
       if (!editor || !props.code) return
       await Promise.all([
         delay(400),
-        editor.loadCode(props.code)
+        editor.codeToGraph(props.code)
       ])
     },
     fail: () => editor?.clear()
@@ -68,7 +80,7 @@ export function useEditor(props: { lang: Language<any, any, any, any>, code: str
 
       const [, code] = await Promise.all([
         delay(400),
-        editor.toCode()
+        editor.graphToCode()
       ])
 
       setCode(code)
@@ -91,13 +103,6 @@ export function useEditor(props: { lang: Language<any, any, any, any>, code: str
     graphToCode,
     code,
     executableCode,
-    maxStep: editor?.maxStep,
-    stepNames: editor?.stepNames || [],
-    getCurrentStep: () => editor?.getCurrentStep() ?? -1,
-    startStepByStep: editor?.startStepByStep,
-    currentGraphToCode: editor?.currentGraphToCode,
-    stepDown: editor?.stepDown,
-    stepUp: editor?.stepUp,
     canvas: (
       <Theme>
         <Tooltip placement="bottom" title="To code">

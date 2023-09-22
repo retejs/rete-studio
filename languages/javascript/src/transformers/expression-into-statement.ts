@@ -1,8 +1,8 @@
-import { ClassicPreset } from 'rete'
 import {
   ASTNodeBase, BIND_KEY, Connection, Context, forEach,
-  getInputNode, mergeSiblingNodes, Schemes, socket, ToASTContext,
-  Utils } from 'rete-studio-core'
+  getInputNode, Input, mergeSiblingNodes, Schemes, socket, ToASTContext,
+  Utils
+} from 'rete-studio-core'
 
 import { Transformer } from './interface'
 
@@ -61,7 +61,7 @@ export class ExpressionIntoStatement<ASTNode extends ASTNodeBase, S extends Sche
             if (key !== BIND_KEY) statement.removeInput(key)
           })
           statement.label = 'ExpressionStatement'
-          statement.addInput('expression', new ClassicPreset.Input(socket, 'expression', true))
+          statement.addInput('expression', new Input(socket, 'expression', true))
 
           await editor.addConnection(new Connection(expression, BIND_KEY, statement, 'expression'))
         }

@@ -329,7 +329,7 @@ export function InsertButton(props: { data: InsertControl }) {
   return (
     <Drag.NoDrag>
       <Themed color="white">
-        <Button onClick={() => props.data.options.onClick(props.data)}>+</Button>
+        <Button onClick={() => props.data.onClick && props.data.onClick(props.data)}>+</Button>
       </Themed>
     </Drag.NoDrag>
   )

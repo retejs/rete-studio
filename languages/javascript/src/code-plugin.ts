@@ -2,8 +2,7 @@
 import generate from '@babel/generator'
 import { parse, ParserOptions } from '@babel/parser'
 import * as BabelType from '@babel/types'
-import { ClassicPreset, NodeEditor } from 'rete'
-import { AreaPlugin } from 'rete-area-plugin'
+import { ClassicPreset } from 'rete'
 import { BaseNode, BaseOptions, CodePlugin, Connection, Output, Schemes, socket } from 'rete-studio-core'
 
 import { applyAstReverseTransformations, applyAstTransformations, makePurifiedExecutable } from './ast'
@@ -49,7 +48,7 @@ const base: BaseOptions<Schemes> = {
 }
 
 export const astTools = {
-  parse(code: string) {
+  async parse(code: string) {
     const parserOptions: ParserOptions = {
       sourceType: 'module',
       strictMode: false,
@@ -58,21 +57,21 @@ export const astTools = {
 
     return parse(code, parserOptions)
   },
-  generate(ast: BabelType.File) {
+  async generate(ast: BabelType.File) {
     return generate(ast).code
   },
-  purify(ast: BabelType.File) {
+  async purify(ast: BabelType.File) {
     return applyAstTransformations(ast)
   },
-  unpurify(ast: BabelType.File) {
+  async unpurify(ast: BabelType.File) {
     return applyAstReverseTransformations(ast)
   },
-  executable(ast: BabelType.File) {
+  async executable(ast: BabelType.File) {
     return makePurifiedExecutable(BabelType.cloneNode(ast))
   }
 }
 
-export function initCodePlugin<K>(editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, K>) {
+export function initCodePlugin() {
   const processedTypes = new Set<string>()
   const unsupportedTypes = [
     'ClassPrivateProperty', 'ClassPrivateMethod', 'PrivateName', 'WithStatement',
@@ -104,7 +103,7 @@ export function initCodePlugin<K>(editor: NodeEditor<Schemes>, area: AreaPlugin<
       new CleanUpPorts(),
       new MarkFrames(),
       new MarkControlSockets(),
-      new AddControls(editor, area),
+      new AddControls(),
       new Rename()
     ],
     up: {
@@ -156,14 +155,8 @@ export function initCodePlugin<K>(editor: NodeEditor<Schemes>, area: AreaPlugin<
     }
   })
 
-  async function toGraph(ast: BabelType.File, imported?: () => void) {
-    await code.toGraph(ast, async () => {
-      // const processed = Array.from(processedTypes)
-
-      // console.log('total types', processed)
-      // console.log('unhandled', BabelType.STANDARDIZED_TYPES.filter(t => ![...unsupportedTypes, ...processed].includes(t)))
-      imported && imported()
-    })
+  async function toGraph(ast: BabelType.File) {
+    await code.toGraph(ast)
   }
 
   async function toAST() {

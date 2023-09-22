@@ -1,86 +1,42 @@
-import { getUID, NodeEditor } from 'rete'
-import { AreaPlugin } from 'rete-area-plugin'
+// import { getUID } from 'rete'
 import {
   ASTNodeBase, Context, Input, InputControl, InsertControl, Output, RefSocket, Schemes, SelectControl, Socket,
-  socket,
-  ToASTContext } from 'rete-studio-core'
+  // socket,
+  ToASTContext
+} from 'rete-studio-core'
 
 import { Transformer } from './interface'
 
 export class AddControls<ASTNode extends ASTNodeBase, S extends Schemes> extends Transformer<Context<ASTNode, S>, ToASTContext<ASTNode, S>> {
-  constructor(private editor: NodeEditor<S>, private area: AreaPlugin<S, any>) {
+  constructor() {
     super('add controls')
   }
 
-  createInsertButton(nodeId: string, key: string, side: 'input' | 'output', needControl?: boolean) {
+  createInsertButton(key: string, side: 'input' | 'output', needControl?: boolean) {
     return new InsertControl({
-      nodeId,
-      onClick: (control) => {
-        const activeNode = this.editor.getNode(control.options.nodeId)
-        const list = side === 'input' ? activeNode.inputs : activeNode.outputs
-        const index = Object.keys(list).filter(k => k.startsWith(key)).length
-        const arrayKey = `${key}[${index}]`
-
-        if (side === 'input') {
-          const input = new Input(socket, arrayKey, true)
-
-          if (needControl && !input.control) {
-            const control = new InputControl({ type: 'text' })
-
-            input.control = control
-          }
-
-          activeNode.addInput(arrayKey, input)
-        } else {
-          const identifier = `arg${getUID()}`
-          const output = new Output(new RefSocket('Reference', identifier), arrayKey, true)
-
-          if (needControl && !output.control) {
-            const control = this.createOutputIdentifierControl(identifier, nodeId, arrayKey)
-
-            output.control = control
-          }
-          activeNode.addOutput(arrayKey, output)
-        }
-
-        activeNode.updateSize()
-        this.area.update('node', activeNode.id)
-      }
+      action: ['insert', { key, side, needControl }]
     })
   }
 
-  private createOutputIdentifierControl(identifier: string, nodeId: string, key: string) {
-    const editor = this.editor
-
-    return new InputControl({
-      nodeId,
+  private createOutputIdentifierControl(identifier: string, key: string) { // TODO
+    const control = new InputControl({
+      action: ['change-output-identifier', { key }],
       type: 'identifier',
       initial: identifier,
-      allowedTypes: ['identifier'],
-      change(value) {
-        if (!this.nodeId) return
-        const activeNode = editor.getNode(this.nodeId);
-
-        (activeNode.outputs[key]!.socket as RefSocket).identifier = String(value)
-      }
+      allowedTypes: ['identifier']
     })
+
+    return control
   }
 
-  private createTextControl(value: string | number, nodeId: string, key: string) {
-    const editor = this.editor
-
-    return new InputControl({
-      nodeId,
+  private createTextControl(value: string | number, key: string) {
+    const control = new InputControl({
+      action: ['change-key-text', { key }],
       type: 'text',
-      initial: value,
-      change(value) {
-        console.log(value, this.nodeId)
-        if (!this.nodeId) return
-        const activeNode = editor.getNode(this.nodeId)
-
-        activeNode.data[key] = value
-      }
+      initial: value
     })
+
+    return control
   }
 
   async up(context: Context<ASTNode, S>) {
@@ -88,43 +44,43 @@ export class AddControls<ASTNode extends ASTNodeBase, S extends Schemes> extends
 
     for (const node of editor.getNodes()) {
       if (['ClassBody'].includes(node.label)) {
-        node.addControl('insert', this.createInsertButton(node.id, 'body', 'input'))
+        node.addControl('insert', this.createInsertButton('body', 'input'))
       }
       if (['CallExpression'].includes(node.label)) {
-        node.addControl('insert', this.createInsertButton(node.id, 'arguments', 'input', true))
+        node.addControl('insert', this.createInsertButton('arguments', 'input', true))
       }
       if (['ArrayExpression'].includes(node.label)) {
-        node.addControl('insert', this.createInsertButton(node.id, 'elements', 'input', true))
+        node.addControl('insert', this.createInsertButton('elements', 'input', true))
       }
       if (['ObjectExpression'].includes(node.label)) {
-        node.addControl('insert', this.createInsertButton(node.id, 'properties', 'input'))
+        node.addControl('insert', this.createInsertButton('properties', 'input'))
       }
       if (['FunctionExpression', 'ArrowFunctionExpression', 'Constructor'].includes(node.label)) {
         const entry = editor.getNodes().find((n) => n.parent === node.id && n.label === 'Entry')
 
         if (!entry) throw new Error('AddControls: entry node not found')
 
-        entry.addControl('insert', this.createInsertButton(entry.id, 'params', 'output', true))
+        entry.addControl('insert', this.createInsertButton('params', 'output', true))
       }
       if (['ThrowStatement'].includes(node.label)) {
         const input = node.inputs['argument']!
 
         if (!input.control) {
-          input.control = new InputControl({ type: 'text' })
+          input.control = new InputControl({ action: 'change-throw', type: 'text' })
         }
       }
       if (['ExpressionStatement'].includes(node.label)) {
         const input = node.inputs['expression']!
 
         if (!input.control) {
-          input.control = new InputControl({ type: 'identifier' })
+          input.control = new InputControl({ action: 'change-expression', type: 'identifier' })
         }
       }
       if (['ArrayExpression'].includes(node.label)) {
         for (const [key, input] of Object.entries(node.inputs)) {
           if (input && key.startsWith('elements')) {
             if (!input.control) {
-              input.control = new InputControl({ type: 'identifier' })
+              input.control = new InputControl({ action: 'change-array-element', type: 'identifier' })
             }
           }
         }
@@ -134,39 +90,35 @@ export class AddControls<ASTNode extends ASTNodeBase, S extends Schemes> extends
         const right = node.inputs['right']!
 
         if (!left.control) {
-          left.control = new InputControl({ type: 'identifier' })
+          left.control = new InputControl({ action: 'change-left', type: 'identifier' })
         }
         if (!right.control) {
-          right.control = new InputControl({ type: 'identifier' })
+          right.control = new InputControl({ action: 'change-right', type: 'identifier' })
         }
       }
       if (['RegExpLiteral'].includes(node.label)) {
-        node.addControl('pattern', this.createTextControl(String(node.data.pattern), node.id, 'pattern'))
-        node.addControl('flags', this.createTextControl(String(node.data.flags || ''), node.id, 'flags'))
+        node.addControl('pattern', this.createTextControl(String(node.data.pattern), 'pattern'))
+        node.addControl('flags', this.createTextControl(String(node.data.flags || ''), 'flags'))
       }
       if (['ObjectProperty'].includes(node.label)) {
         const keyInput = node.inputs['key']!
 
-        if (!keyInput.control) keyInput.addControl(new InputControl({ type: 'text', initial: '' }))
+        if (!keyInput.control) keyInput.addControl(new InputControl({ action: 'change-object-property-key', type: 'text', initial: '' }))
       }
       if (['VariableDeclarator'].includes(node.label)) {
         const options = [{ value: 'var', label: 'Var' }, { value: 'let', label: 'Let' }, { value: 'const', label: 'Const' }]
         const init = node.inputs['init']!
 
-        if (!init.control) init.addControl(new InputControl({ type: 'identifier', initial: '' }))
-        node.addControl('kind', new SelectControl(String(node.data.kind), options, (key) => { // FIX node id after clone
-          const activeNode = this.editor.getNode(node.id)
-
-          activeNode.data.kind = key
-        }))
+        if (!init.control) init.addControl(new InputControl({ action: 'change-var-identifier', type: 'identifier', initial: '' }))
+        node.addControl('kind', new SelectControl({ action: 'select-var-kind', value: String(node.data.kind), options }))
       }
       if (['UpdateExpression'].includes(node.label) && ['++', '--'].includes(String(node.data.operator))) {
         const options = [{ value: 'prefix', label: 'Prefix' }, { value: 'postfix', label: 'Postfix' }]
 
-        node.addControl('prefix', new SelectControl(node.data.prefix ? 'prefix' : 'postfix', options, (key) => { // FIX node id after clone
-          const activeNode = this.editor.getNode(node.id)
-
-          activeNode.data.prefix = (key === 'prefix') as any
+        node.addControl('prefix', new SelectControl({
+          action: 'select-update-prefix',
+          value: node.data.prefix ? 'prefix' : 'postfix',
+          options
         }))
       }
       const outputs = Object.entries(node.outputs)
@@ -174,7 +126,7 @@ export class AddControls<ASTNode extends ASTNodeBase, S extends Schemes> extends
 
       for (const [key, output] of outputs) {
         if (!output.socket.identifier) throw new Error('AddControls: output identifier not found')
-        const control = this.createOutputIdentifierControl(output.socket.identifier, node.id, key)
+        const control = this.createOutputIdentifierControl(output.socket.identifier, key)
 
         output.addControl(control)
       }

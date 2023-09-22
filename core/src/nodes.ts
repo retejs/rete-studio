@@ -1,55 +1,7 @@
 import { ClassicPreset, NodeId } from 'rete'
 import { BIND_KEY } from './core'
-
-export class InsertControl extends ClassicPreset.Control {
-  constructor(public options: { nodeId: NodeId, onClick: (control: InsertControl) => void }) {
-    super()
-  }
-
-  clone(nodeId?: NodeId) {
-    return new InsertControl({
-      nodeId: nodeId || this.options.nodeId,
-      onClick: this.options.onClick
-    })
-  }
-}
-
-export class SelectControl extends ClassicPreset.Control {
-  constructor(public value: string, public options: { value: string, label: string }[], public onChange: (value: string) => void) {
-    super()
-  }
-
-  change(key: string) {
-    this.value = key
-    this.onChange(key)
-  }
-
-  clone() {
-    return new SelectControl(this.value, this.options, this.onChange)
-  }
-}
-
-import { socket, Socket } from './sockets'
-export { socket, Socket }
-
-export class RefSocket extends Socket {
-  isRef = true
-  constructor(public name: string, public identifier?: string) {
-    super(name)
-  }
-
-  clone() {
-    return new RefSocket(this.name, this.identifier)
-  }
-}
-
-export class ControlSocket extends Socket {
-  isControl = true
-
-  clone() {
-    return new ControlSocket(this.name)
-  }
-}
+import { socket, Socket, JSONSocket, ControlSocket, RefSocket } from './sockets'
+import { Control, InputControl, InsertControl, JSONControl, SelectControl } from './controls'
 
 export type InputType = 'text' | 'number' | 'boolean' | 'identifier' | 'null' | 'bigint'
 export const inputTypes: { label: string, value: InputType }[] = [
@@ -61,58 +13,112 @@ export const inputTypes: { label: string, value: InputType }[] = [
   { label: 'BigInt', value: 'bigint' }
 ]
 
-export class InputControl extends ClassicPreset.InputControl<'text' | 'number'> {
-  constructor(public options?: {
-    type: InputType,
-    readonly?: boolean
-    initial?: string | number
-    change?: (value: string | number) => void
-    allowedTypes?: InputType[],
-    nodeId?: NodeId // TODO dependency injection
-  }) {
-    super('text', options)
-  }
-
-  setValue(value?: string | number | undefined): void {
-    const type = this.options?.type
-
-    super.setValue(type === 'number' && typeof value !== 'undefined' ? +value : value)
-  }
-
-  clone(nodeId?: NodeId) {
-    return new InputControl({
-      type: this.options?.type || 'text',
-      readonly: this.readonly,
-      initial: this.value,
-      allowedTypes: this.options?.allowedTypes ? [...this.options.allowedTypes] : undefined,
-      change: this.options?.change,
-      nodeId
-    })
-  }
-}
-
 export type Sockets = ControlSocket | RefSocket | Socket
 
 export class Input<S extends Socket> extends ClassicPreset.Input<S> {
+  control!: Control | null
   alwaysVisibleControl?: boolean
-}
-export class Output<S extends Socket> extends ClassicPreset.Output<S> {
-  control?: ClassicPreset.Control
 
-  addControl(control: ClassicPreset.Control) {
+  serialize(): JSONInput {
+    return {
+      id: this.id,
+      label: this.label,
+      index: this.index,
+      multipleConnections: this.multipleConnections,
+      alwaysVisibleControl: this.alwaysVisibleControl,
+      socket: this.socket.serialize(),
+      control: this.control?.serialize()
+    }
+  }
+
+  static deserialize(data: JSONInput, socket: Socket, control?: Control) {
+    const input = new Input(socket, data.label, data.multipleConnections)
+
+    input.id = data.id
+    input.index = data.index
+    input.alwaysVisibleControl = data.alwaysVisibleControl
+    if (control) input.addControl(control)
+
+    return input
+  }
+}
+
+export type JSONInput = {
+  id: string
+  label?: string
+  index?: number
+  multipleConnections?: boolean
+  alwaysVisibleControl?: boolean
+  socket: JSONSocket
+  control?: JSONControl
+}
+
+export class Output<S extends Socket> extends ClassicPreset.Output<S> {
+  control?: Control
+
+  addControl(control: Control) {
     this.control = control
   }
 
   removeControl() {
     this.control = undefined
   }
+
+  serialize(): JSONOutput {
+    return {
+      id: this.id,
+      label: this.label,
+      index: this.index,
+      multipleConnections: this.multipleConnections,
+      socket: this.socket.serialize(),
+      control: this.control?.serialize()
+    }
+  }
+
+  static deserialize(data: JSONOutput, socket: Socket, control?: Control) {
+    const output = new Output(socket, data.label, data.multipleConnections)
+
+    output.id = data.id
+    output.index = data.index
+    if (control) output.addControl(control)
+
+    return output
+  }
 }
 
-export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, { [key in string]: Sockets }, { [key in string]: ClassicPreset.Control | InputControl | InsertControl | SelectControl }> {
+export type JSONOutput = {
+  id: string
+  label?: string
+  index?: number
+  multipleConnections?: boolean
+  socket: JSONSocket
+  control?: JSONControl
+}
+
+export type JSONBaseNode = {
+  id: string
+  width: number
+  height: number
+  parent?: NodeId
+  label: string
+  data: BaseNodeData
+  frame?: {
+    left?: boolean
+    right?: boolean
+  }
+  type: 'statement' | 'expression' | 'unknown'
+  inputs: Record<string, JSONInput>
+  outputs: Record<string, JSONOutput>
+  controls: Record<string, JSONControl>
+}
+
+type BaseNodeData = Record<string, string | number | undefined>
+
+export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, { [key in string]: Sockets }, { [key in string]: Control | InputControl | InsertControl | SelectControl }> {
   width = 300
   height = 30
   parent?: NodeId
-  data: Record<string, string | number> = {}
+  data: BaseNodeData = {}
   type: 'statement' | 'expression' | 'unknown' = 'unknown'
   frame?: {
     left?: boolean
@@ -120,13 +126,60 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
   }
   inputs: { [key in string]?: Input<Sockets> } = {}
   outputs: { [key in string]?: Output<Sockets> } = {}
-  controls: { [key in string]: ClassicPreset.Control | InputControl | InsertControl | SelectControl } = {}
+  controls: { [key in string]: Control | InputControl | InsertControl | SelectControl } = {}
   // loopBranch?: boolean
 
   constructor(label: string) {
     super(label)
     this.addInput(BIND_KEY, new Input(socket, '', true))
     this.addOutput(BIND_KEY, new Output(socket, '', true))
+  }
+
+  serialize(): JSONBaseNode {
+    return {
+      id: this.id,
+      width: this.width,
+      height: this.height,
+      parent: this.parent,
+      label: this.label,
+      frame: this.frame,
+      data: {
+        ...this.data
+      },
+      type: this.type,
+      inputs: Object.fromEntries(Object.entries(this.inputs).map(([key, input]) => input ? [key, input.serialize()] : [key])),
+      outputs: Object.fromEntries(Object.entries(this.outputs).map(([key, output]) => output ? [key, output.serialize()] : [key])),
+      controls: Object.fromEntries(Object.entries(this.controls).map(([key, control]) => control ? [key, control.serialize()] : [key])),
+    }
+  }
+
+  static deserialize(
+    data: JSONBaseNode,
+    getInput: (data: JSONInput) => Input<Socket>,
+    getOutput: (data: JSONOutput) => Output<Socket>,
+    getControl: (data: JSONControl) => Control
+  ) {
+    const node = new BaseNode(data.label)
+
+    node.id = data.id
+    node.parent = data.parent
+    node.data = data.data
+    node.type = data.type
+    node.frame = data.frame
+
+    node.removeInput(BIND_KEY)
+    node.removeOutput(BIND_KEY)
+    Object.entries(data.inputs).forEach(([key, input]) => {
+      node.addInput(key, getInput(input))
+    })
+    Object.entries(data.outputs).forEach(([key, output]) => {
+      node.addOutput(key, getOutput(output))
+    })
+    Object.entries(data.controls).forEach(([key, control]) => {
+      node.addControl(key, getControl(control))
+    })
+
+    return node
   }
 
   addInput<K extends string>(key: K, input: Input<Socket>): void {
@@ -153,7 +206,7 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
     }
   }
 
-  addControl(key: string, control: ClassicPreset.Control): void {
+  addControl(key: string, control: Control): void {
     super.addControl<string>(key, control)
     this.updateSize()
   }
@@ -166,11 +219,11 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
   updateSize() {
     const inputs = Object.entries(this.inputs)
     const outputs = Object.entries(this.outputs)
-    // const controls = Object.entries(this.controls)
+    const controls = Object.entries(this.controls)
 
     this.height = 40 + 4 + 5
-      + Math.max(inputs.length, outputs.length) * 35
-      + Object.entries(this.controls).length * 35
+      + Math.max(inputs.length, outputs.length) * 36
+      + controls.length * 36
 
     const inputsWidths = inputs.map(([_, i]) => i?.control ? 120 : (50 + (i?.label?.length || 0) * 6))
     const outputsWidths = outputs.map(([_, i]) => i?.control ? 120 : (50 + (i?.label?.length || 0) * 6))
@@ -187,12 +240,12 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
     Object.keys(this.inputs).forEach(k => {
       const inp = this.inputs[k]
       if (inp && !n.hasInput(k)) {
-        const clone = new ClassicPreset.Input(inp.socket.clone(), inp.label, true)
+        const clone = new Input(inp.socket.clone(), inp.label, true)
 
         clone.index = inp.index
         if (inp.control) {
           if (!('clone' in inp.control)) throw new Error('Input control must implement clone method')
-          clone.control = (inp.control as any).clone(n.id)
+          clone.control = (inp.control as any).clone()
         }
         n.addInput(k, clone)
       }
@@ -205,7 +258,7 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
         clone.index = out.index
         if (out.control) {
           if (!('clone' in out.control)) throw new Error('Output control must implement clone method')
-          clone.control = (out.control as any).clone(n.id)
+          clone.control = (out.control as any).clone()
         }
         n.addOutput(k, clone)
       }
@@ -215,7 +268,7 @@ export class BaseNode extends ClassicPreset.Node<{ [key in string]: Sockets }, {
       if (control && !n.hasControl(k)) {
         if (!('clone' in control)) throw new Error('Control must implement clone method')
 
-        n.addControl(k, (control as any).clone(n.id))
+        n.addControl(k, (control as any).clone())
       }
     })
     n.type = this.type

@@ -72,3 +72,5 @@ export function useInnerPorts<S extends Schemes, A>(area: AreaPlugin<S, A>, opti
     isRightPort: options.isRightPort,
   }
 }
+
+export type InnerPorts = ReturnType<typeof useInnerPorts>

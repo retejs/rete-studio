@@ -1,6 +1,6 @@
 import { ClassicPreset, NodeEditor, NodeId } from 'rete'
 import { ClassicSchemes } from './types'
-import { Socket } from './nodes'
+import { Socket } from './sockets'
 
 export async function copyToEditor<S extends ClassicSchemes>(from: NodeEditor<S>, to: NodeEditor<S>) {
   async function addNodes(parent?: string) {
