@@ -15,15 +15,16 @@ import { Drag as AreaDrag } from 'rete-area-plugin';
 import { HistoryExtensions, HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin'
 import { items as contextMenuItems } from './context-menu'
 import * as UI from './ui'
-import { applyDI } from './di'
 import { createArrangePlugin, innerPortWidth, layout, padding } from './layout'
+import { serialize, deserialize, applyInteraction } from 'rete-studio-core'
 
 export type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
 
 function create(language: Language<any, any, any>, editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>) {
   const { code, toAST, toGraph, astTools } = language.initCodePlugin()
+  const workerEditor = new NodeEditor<Schemes>()
 
-  editor.use(code)
+  workerEditor.use(code)
 
   async function codeToAST(code: string) {
     return astTools.purify(await astTools.parse(code))
@@ -45,10 +46,18 @@ function create(language: Language<any, any, any>, editor: NodeEditor<Schemes>, 
       return generatedCode
     },
     async codeToGraph(code: string) {
+      console.time('codeToGraph')
       const ast = await codeToAST(code)
 
       await toGraph(ast)
-      applyDI(editor, area)
+      console.timeEnd('codeToGraph')
+
+      const data = serialize(workerEditor)
+
+      await editor.clear()
+      await deserialize(editor, data)
+
+      applyInteraction(editor, id => area.update('node', id))
     }
   }
 }
@@ -87,7 +96,7 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
       for (const connection of graph.connections()) {
         await editor.addConnection(connection)
       }
-      applyDI(editor, area)
+      applyInteraction(editor, id => area.update('node', id))
     })
   })
   const history = new HistoryPlugin()

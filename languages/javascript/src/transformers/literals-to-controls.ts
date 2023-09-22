@@ -1,7 +1,8 @@
 import { NodeId } from 'rete'
 import {
   ASTNodeBase, BaseNode, BIND_KEY, Connection,
-  Context, InputControl, InputType, Schemes, simplifyLiterals, ToASTContext } from 'rete-studio-core'
+  Context, InputControl, InputType, Schemes, simplifyLiterals, ToASTContext
+} from 'rete-studio-core'
 
 import { Transformer } from './interface'
 
@@ -30,10 +31,10 @@ export class LiteralsToControls<ASTNode extends ASTNodeBase, S extends Schemes> 
       return [...literals, 'Identifier'].includes(node.label)
     }, node => {
       if (node.label === 'Identifier') {
-        return new InputControl({ type: 'identifier', initial: String(node.data.name) })
+        return new InputControl({ action: 'change-identifier', type: 'identifier', initial: String(node.data.name) })
       }
       const type = this.literalToType(node.label)
-      const control = new InputControl({ type, readonly: false })
+      const control = new InputControl({ action: 'change-literal', type, readonly: false })
 
       control.setValue(node.data.value)
 

@@ -1,10 +1,10 @@
-import { socket } from '../sockets'
+import { Socket, socket } from '../sockets'
 import { ClassicSchemes } from '../types'
 import { copyToEditor } from '../utils'
 import { NodeEditor, ClassicPreset, Scope, Root } from 'rete'
 import { structures } from 'rete-structures'
 import { Transformer } from './transformer'
-import { Output, Socket } from '../nodes'
+import { Output } from '../nodes'
 
 export {
     Transformer

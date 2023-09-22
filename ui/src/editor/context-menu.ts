@@ -1,8 +1,7 @@
 import { NodeEditor } from 'rete';
 import { AreaPlugin } from 'rete-area-plugin'
 import { Item, Items } from 'rete-context-menu-plugin/_types/types';
-import { LanguageSnippet, Schemes } from 'rete-studio-core';
-import { applyDI } from './di';
+import { LanguageSnippet, Schemes, applyInteraction } from 'rete-studio-core';
 
 function snippetToItem(snippet: LanguageSnippet, add: (code: string) => unknown | Promise<unknown>): Item {
 
@@ -63,8 +62,7 @@ export function items(snippets: LanguageSnippet[], add: (code: string) => unknow
 
         await editor.addNode(node)
 
-
-        applyDI(editor, area)
+        applyInteraction(editor, id => area.update('node', id))
 
         area.translate(node.id, area.area.pointer)
       }

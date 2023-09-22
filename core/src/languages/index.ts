@@ -27,3 +27,7 @@ export type Language<ParseResult, N extends { type: string }, F extends N> = {
     toAST: () => Promise<F>
   }
 }
+
+export class LanguageAdapter {
+
+}
