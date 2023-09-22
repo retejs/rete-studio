@@ -5,12 +5,12 @@ import { Connection, JSONConnection } from './connections'
 import { ControlSocket, JSONControlSocket, JSONRefSocket, JSONSocket, RefSocket, Socket } from './sockets'
 import { InputControl, InsertControl, JSONControl, JSONInputControl, JSONInsertControl, JSONSelectControl, SelectControl } from './controls'
 
-type JSONData = {
+export type JSONEditorData = {
   nodes: JSONBaseNode[],
   connections: JSONConnection[]
 }
 
-export function serialize(editor: NodeEditor<Schemes>) {
+export function serialize(editor: NodeEditor<Schemes>): JSONEditorData {
   const data = {
     nodes: editor.getNodes().map(n => n.serialize()),
     connections: editor.getConnections().map(c => c.serialize()),
@@ -62,7 +62,7 @@ async function importForParent(editor: NodeEditor<Schemes>, nodes: JSONBaseNode[
   }
 }
 
-export async function deserialize(editor: NodeEditor<Schemes>, data: JSONData) {
+export async function deserialize(editor: NodeEditor<Schemes>, data: JSONEditorData) {
   await importForParent(editor, data.nodes)
 
   for (const c of data.connections) {

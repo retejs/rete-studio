@@ -5,7 +5,7 @@ import { ConnectionPlugin, Presets as ConnectionPresets } from 'rete-connection-
 import { ReactArea2D, ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin'
 import { ContextMenuPlugin, ContextMenuExtra } from 'rete-context-menu-plugin'
 import { ScopesPlugin, Presets as ScopePresets } from 'rete-scopes-plugin'
-import { Schemes, Language, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl } from 'rete-studio-core'
+import { Schemes, LanguageAdapter, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl, LanguageSnippet, serialize } from 'rete-studio-core'
 import { areConnected, debugNodes } from './utils'
 import { structures } from 'rete-structures'
 import { useInnerPorts } from './inner-ports'
@@ -16,68 +16,35 @@ import { HistoryExtensions, HistoryPlugin, Presets as HistoryPresets } from 'ret
 import { items as contextMenuItems } from './context-menu'
 import * as UI from './ui'
 import { createArrangePlugin, innerPortWidth, layout, padding } from './layout'
-import { serialize, deserialize, applyInteraction } from 'rete-studio-core'
+import { deserialize, applyInteraction } from 'rete-studio-core'
 
 export type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
 
-function create(language: Language<any, any, any>, editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>) {
-  const { code, toAST, toGraph, astTools } = language.initCodePlugin()
-  const workerEditor = new NodeEditor<Schemes>()
 
-  workerEditor.use(code)
+async function graphFromCode(code: string, language: LanguageAdapter, editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>) {
+  const data = await language.codeToGraph(code)
 
-  async function codeToAST(code: string) {
-    return astTools.purify(await astTools.parse(code))
-  }
+  await editor.clear()
+  await deserialize(editor, data)
 
-  return {
-    codeToExecutable: async (code: string) => {
-      const ast = await codeToAST(code)
-
-      return astTools.generate(await astTools.executable(ast))
-    },
-    async graphToCode() {
-      const ast = await toAST()
-      const generatedCode = astTools.generate(ast)
-
-      console.log(ast)
-      console.log(generatedCode)
-
-      return generatedCode
-    },
-    async codeToGraph(code: string) {
-      console.time('codeToGraph')
-      const ast = await codeToAST(code)
-
-      await toGraph(ast)
-      console.timeEnd('codeToGraph')
-
-      const data = serialize(workerEditor)
-
-      await editor.clear()
-      await deserialize(editor, data)
-
-      applyInteraction(editor, id => area.update('node', id))
-    }
-  }
+  applyInteraction(editor, id => area.update('node', id))
 }
 
-export async function createEditor<ParseResult, N extends { type: string }, F extends N>(container: HTMLElement, language: Language<ParseResult, N, F>) {
+export async function createEditor(container: HTMLElement, snippets: LanguageSnippet[], language: LanguageAdapter) {
   const editor = new NodeEditor<Schemes>()
   const area = new AreaPlugin<Schemes, AreaExtra>(container)
   const connection = new ConnectionPlugin<Schemes, AreaExtra>()
   const reactPlugin = new ReactPlugin<Schemes, AreaExtra>({ createRoot })
   const contextMenu = new ContextMenuPlugin<Schemes>({
-    items: contextMenuItems(language.snippets, async code => {
+    items: contextMenuItems(snippets, async code => {
       const tempEditor = new NodeEditor<Schemes>()
       const tempArea = new AreaPlugin<Schemes, AreaExtra>(document.createElement('div'))
       const arrange = createArrangePlugin(tempEditor, innerPorts)
-      const { codeToGraph } = create(language, tempEditor, tempArea)
 
       tempEditor.use(tempArea)
       tempArea.use(arrange)
 
-      await codeToGraph(code)
+      await graphFromCode(code, language, tempEditor, tempArea)
       await layout(tempEditor, area, arrange, innerPorts)
 
       const graph = structures(tempEditor)
@@ -253,8 +220,6 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
 
   area.use(scopes)
 
-  const { codeToGraph, graphToCode, codeToExecutable } = create(language, editor, area)
-
   debugNodes(editor, area)
 
   editor.addPipe(c => {
@@ -266,11 +231,18 @@ export async function createEditor<ParseResult, N extends { type: string }, F ex
 
   return {
     async codeToGraph(code: string) {
-      await codeToGraph(code)
-      console.log(await layout(editor, area, arrange, innerPorts, true))
+      await graphFromCode(code, language, editor, area)
+      console.log('layout:', await layout(editor, area, arrange, innerPorts, true))
     },
-    graphToCode,
-    codeToExecutable,
+    async graphToCode() {
+      const data = serialize(editor)
+      const code = await language.graphToCode(data)
+
+      return code
+    },
+    async codeToExecutable(code: string) {
+      return language.codeToExecutable(code)
+    },
     layout: () => layout(editor, area, arrange, innerPorts, true),
     clear: () => editor.clear(),
     destroy: () => area.destroy()

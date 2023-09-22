@@ -9,7 +9,7 @@ import { useEditor } from './shared/Editor';
 import { CodeError } from './shared/Alert';
 import { CopyCode } from './shared/CopyCode';
 import { Editor } from '@monaco-editor/react';
-import { Language } from 'rete-studio-core';
+import { LanguageAdapter } from 'rete-studio-core';
 import { Theme } from './theme';
 
 const Layout = styled.div`
@@ -55,7 +55,7 @@ const Canvas = styled(Area)`
   position: relative;
 `
 
-export function Playground({ lang, example, switchLang }: { switchLang: React.ReactNode, example: string, lang: Language<any, any, any> }) {
+export function Playground({ lang, example, switchLang }: { switchLang: React.ReactNode, example: string, lang: LanguageAdapter }) {
   const [code, setCode] = useState<string | undefined>()
   const debouncedCode = useDebounce(code, 500)
   const editor = useEditor({ lang, code: debouncedCode })

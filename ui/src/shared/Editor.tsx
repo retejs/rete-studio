@@ -6,7 +6,7 @@ import styled from 'styled-components'
 import { useRete } from 'rete-react-plugin';
 import { createEditor } from '../editor'
 import { delay } from '../delay';
-import { Language } from 'rete-studio-core';
+import { LanguageAdapter, LanguageSnippet } from 'rete-studio-core';
 import { Theme } from '../theme';
 
 const SaveButton = styled(Button)`
@@ -45,13 +45,18 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
   }
 }
 
-export function useEditor(props: { lang: Language<any, any, any>, code: string | undefined, autoCode?: boolean }) {
+export function useEditor(props: { lang: LanguageAdapter, code: string | undefined, autoCode?: boolean }) {
+  const [snippets, setSnippets] = useState<LanguageSnippet[]>([])
   const create = useCallback((container: HTMLElement) => {
-    return createEditor(container, props.lang)
-  }, [createEditor, props.lang])
+    return createEditor(container, snippets, props.lang)
+  }, [createEditor, snippets, props.lang])
   const [ref, editor] = useRete(create)
   const [code, setCode] = useState<string | undefined>()
   const [executableCode, setExecutableCode] = useState<undefined | string>()
+
+  useEffect(() => {
+    props.lang.getSnippets().then(setSnippets)
+  }, [props.lang])
 
   useEffect(() => {
     if (code && editor) {

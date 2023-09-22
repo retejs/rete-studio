@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 import { useLang as useUILang, SwitchLang as UISwitchLang } from 'rete-studio-ui'
-import { languages } from './languages';
+import { languages } from './languages'
 
 export function useLang() {
   const [searchParams] = useSearchParams()
