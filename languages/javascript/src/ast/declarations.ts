@@ -16,7 +16,7 @@ export function declarationToVariable(
       BabelType.variableDeclarator(declaration.id, declarationToExpression(declaration, transformBody, parentScope))
     ])
   }
-  if (BabelType.isClassDeclaration(declaration)) {
+  if (BabelType.isClassDeclaration(declaration) && declaration.id) {
     return BabelType.variableDeclaration('const', [
       BabelType.variableDeclarator(declaration.id, declarationToExpression(declaration, transformBody, parentScope))
     ])
