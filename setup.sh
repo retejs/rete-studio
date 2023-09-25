@@ -1,3 +1,5 @@
+set -e
+
 function setupPackage {
   cd $1
   rm -f package-lock.json
@@ -6,6 +8,7 @@ function setupPackage {
   cd dist
   npm pack
   mv *.tgz ..
+  sleep 2
 }
 
 function setupApp {
