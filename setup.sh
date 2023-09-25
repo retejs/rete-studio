@@ -1,5 +1,6 @@
 function setupPackage {
   cd $1
+  rm -f package-lock.json
   npm i
   npm run build
   cd dist
