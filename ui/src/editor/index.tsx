@@ -1,11 +1,11 @@
 import { NodeEditor } from 'rete'
 import { createRoot } from 'react-dom/client'
 import { AreaPlugin, AreaExtensions } from 'rete-area-plugin'
-import { ConnectionPlugin, Presets as ConnectionPresets } from 'rete-connection-plugin'
+import { ConnectionPlugin, ClassicFlow, getSourceTarget } from 'rete-connection-plugin'
 import { ReactArea2D, ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin'
 import { ContextMenuPlugin, ContextMenuExtra } from 'rete-context-menu-plugin'
 import { ScopesPlugin, Presets as ScopePresets } from 'rete-scopes-plugin'
-import { Schemes, LanguageAdapter, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl, LanguageSnippet, serialize } from 'rete-studio-core'
+import { Schemes, LanguageAdapter, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl, LanguageSnippet, serialize, Connection } from 'rete-studio-core'
 import { areConnected, debugNodes } from './utils'
 import { structures } from 'rete-structures'
 import { useInnerPorts } from './inner-ports'
@@ -72,7 +72,17 @@ export async function createEditor(container: HTMLElement, snippets: LanguageSni
   history.addPreset(HistoryPresets.classic.setup())
 
   // connection.addPreset(() => new BidirectFlow())
-  connection.addPreset(ConnectionPresets.classic.setup())
+  connection.addPreset(() => new ClassicFlow({
+    makeConnection(from, to, context) {
+      const [source, target] = getSourceTarget(from, to) || [null, null]
+      const { editor } = context
+
+      if (source && target) {
+        editor.addConnection(new Connection(editor.getNode(source.nodeId), source.key, editor.getNode(target.nodeId), target.key))
+        return true
+      }
+    }
+  }))
 
 
   area.area.setDragHandler(new AreaDrag({
