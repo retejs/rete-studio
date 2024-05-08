@@ -1,7 +1,8 @@
 import { ClassicPreset, NodeId } from 'rete'
-import { BIND_KEY } from './core'
-import { socket, Socket, JSONSocket, ControlSocket, RefSocket } from './sockets'
+
 import { Control, InputControl, InsertControl, JSONControl, SelectControl } from './controls'
+import { BIND_KEY } from './core/types'
+import { ControlSocket, JSONSocket, RefSocket, Socket, socket } from './sockets'
 
 export type InputType = 'text' | 'number' | 'boolean' | 'identifier' | 'null' | 'bigint'
 export const inputTypes: { label: string, value: InputType }[] = [

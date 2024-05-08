@@ -1,7 +1,8 @@
 import { NodeEditor } from 'rete'
 import { structures } from 'rete-structures'
-import { ASTNodeBase, BIND_KEY, ToASTContext } from '.'
+
 import { ClassicSchemes } from '../types'
+import { ASTNodeBase, BIND_KEY, ToASTContext } from './types'
 
 export function belongToSameClosure<S extends ClassicSchemes>(source: S['Node'], target: S['Node'], { editor }: { editor: NodeEditor<S> }) {
   if (source.parent === target.parent) return true
@@ -86,6 +87,7 @@ export function flowToTree<S extends ClassicSchemes, ASTNode extends ASTNodeBase
 }) {
   const { isRoot, isBranch, isBlock, getBranchNames, getBlockParameterName, isValidSubflow } = options
 
+  // eslint-disable-next-line max-statements
   return async (context: ToASTContext<ASTNode, S>) => {
     const { editor } = context
 

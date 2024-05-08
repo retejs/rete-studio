@@ -1,8 +1,9 @@
+import { ClassicPreset, NodeEditor, NodeId } from 'rete'
+
+import { Input, Output, Sockets } from '../nodes'
 import { ClassicSchemes } from '../types'
 import { MirrorContext, mirrorInput, mirrorOutput, removeNodeWithConnections } from '../utils'
-import { NodeEditor, ClassicPreset, NodeId } from 'rete'
-import { Input, Output, Sockets } from '../nodes'
-import { ASTNodeBase, BaseOptions, BIND_KEY, Context } from '.'
+import { ASTNodeBase, BaseOptions, BIND_KEY, Context } from './types'
 
 type PromiseLike<T> = Promise<T> | T
 
@@ -108,7 +109,6 @@ export function mirrorLeft<ASTNode extends ASTNodeBase, S extends ClassicSchemes
     await mirrorInput(editor, (id, key) => match(editor.getNode(id), key), mirrorContext)
   }
 }
-
 
 // reusable
 export function simplifyIdentifiers<ASTNode extends ASTNodeBase, S extends ClassicSchemes>(

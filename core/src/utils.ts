@@ -1,6 +1,7 @@
 import { ClassicPreset, NodeEditor, NodeId } from 'rete'
-import { ClassicSchemes } from './types'
+
 import { Socket } from './sockets'
+import { ClassicSchemes } from './types'
 
 export async function copyToEditor<S extends ClassicSchemes>(from: NodeEditor<S>, to: NodeEditor<S>) {
   async function addNodes(parent?: string) {
@@ -26,7 +27,6 @@ export type MirrorContext<S extends ClassicSchemes> = {
   createOutput: (label?: string) => ClassicPreset.Output<Socket>
   createConnection: (source: S['Node'], sourceOutput: string, target: S['Node'], targetInput: string) => S['Connection']
 }
-
 
 export function mirrorPorts<S extends ClassicSchemes>(editor: NodeEditor<S>, nodeId: string, context: MirrorContext<S>): () => void {
   const { ignore } = context
@@ -95,7 +95,6 @@ export async function mirrorInput<S extends ClassicSchemes>(editor: NodeEditor<S
     await editor.addConnection(context.createConnection(node, con.targetInput, editor.getNode(con.source), con.sourceOutput))
   }
 }
-
 
 export async function mirrorOutgoers<S extends ClassicSchemes>(editor: NodeEditor<S>, nodeId: string, context: MirrorContext<S>) {
   const { ignore } = context

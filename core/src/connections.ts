@@ -1,4 +1,5 @@
 import { ClassicPreset } from 'rete'
+
 import { BaseNode } from './nodes'
 
 export class Connection<A extends BaseNode, B extends BaseNode> extends ClassicPreset.Connection<A, B> {

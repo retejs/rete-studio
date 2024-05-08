@@ -1,9 +1,10 @@
 import { NodeEditor } from 'rete'
-import { Schemes } from './types'
-import { BaseNode, Input, JSONBaseNode, Output } from './nodes'
+
 import { Connection, JSONConnection } from './connections'
-import { ControlSocket, JSONControlSocket, JSONRefSocket, JSONSocket, RefSocket, Socket } from './sockets'
 import { InputControl, InsertControl, JSONControl, JSONInputControl, JSONInsertControl, JSONSelectControl, SelectControl } from './controls'
+import { BaseNode, Input, JSONBaseNode, Output } from './nodes'
+import { ControlSocket, JSONControlSocket, JSONRefSocket, JSONSocket, RefSocket, Socket } from './sockets'
+import { Schemes } from './types'
 
 export type JSONEditorData = {
   nodes: JSONBaseNode[],
@@ -18,7 +19,6 @@ export function serialize(editor: NodeEditor<Schemes>): JSONEditorData {
 
   return data
 }
-
 
 function deserializeSocket(socket: JSONRefSocket | JSONControlSocket | JSONSocket) {
   if ('isRef' in socket) {

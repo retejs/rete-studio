@@ -1,7 +1,8 @@
 import { NodeEditor } from 'rete'
+
 import { CodePlugin } from '../core'
+import { deserialize, JSONEditorData, serialize } from '../serialization'
 import { Schemes } from '../types'
-import { JSONEditorData, deserialize, serialize } from '../serialization'
 
 export type LanguageSnippet = {
   label: string
@@ -37,7 +38,6 @@ export interface LanguageAdapter {
   graphToCode(data: JSONEditorData): Promise<string>;
   codeToGraph(code: string): Promise<JSONEditorData>;
 }
-
 
 export function createAdapter(language: Language<any, any, any>): LanguageAdapter {
   const { code, toAST, toGraph, astTools } = language.initCodePlugin()

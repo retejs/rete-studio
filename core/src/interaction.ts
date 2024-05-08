@@ -1,8 +1,9 @@
-import { NodeEditor, getUID } from 'rete'
-import { Schemes } from './types'
-import { Input, Output, BaseNode } from './nodes'
+import { getUID, NodeEditor } from 'rete'
+
 import { InputControl, InsertControl, SelectControl } from './controls'
+import { BaseNode, Input, Output } from './nodes'
 import { RefSocket, socket } from './sockets'
+import { Schemes } from './types'
 
 function applyOutputIdentifierControl(control: InputControl, activeNode: BaseNode, data: { key: string }) {
 	control.options.onChange = (value) => {
@@ -26,7 +27,6 @@ function applySelectUpdatePrefix(control: SelectControl, activeNode: BaseNode) {
 		activeNode.data.prefix = (value === 'prefix') as any
 	}
 }
-
 
 function applyInsertHandler(control: InsertControl, activeNode: BaseNode, update: (nodeId: string) => void, data: { key: string, side: 'input' | 'output', needControl?: boolean }) {
 	const { key, side, needControl } = data
@@ -68,7 +68,6 @@ function applyInsertHandler(control: InsertControl, activeNode: BaseNode, update
 		update(activeNode.id)
 	}
 }
-
 
 export function applyInteraction(editor: NodeEditor<Schemes>, update: (nodeId: string) => void) {
 	for (const node of editor.getNodes()) {

@@ -1,7 +1,8 @@
 import { ClassicPreset } from 'rete'
-import { socket, Socket } from './sockets'
+
 import { InputType } from './nodes'
-export { socket, Socket }
+import { Socket, socket } from './sockets'
+export { Socket, socket }
 
 export class Control extends ClassicPreset.Control {
 	serialize(): JSONControl {
