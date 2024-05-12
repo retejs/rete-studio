@@ -1,9 +1,11 @@
 /* eslint-disable max-statements */
 // import { parse } from '@babel/parser'
+// eslint-disable-next-line no-undef
+globalThis.crypto = require('crypto')
 import { describe, expect, it } from '@jest/globals'
 
 import { flowToTree, treeToFlow } from './transformers'
-import { comparable, getData, sanitize, stringifyChart } from './utils'
+import { N, comparable, getData, sanitize, stringifyChart } from './utils'
 
 const numberOfIfs = 25
 
@@ -231,6 +233,12 @@ const assets = [
 ]
 ]
 
+const props = {
+  isStartNode: (source: N) => Boolean(source.id.match(/^(Program)/)),
+  isBlock: (source: N) => Boolean(source.id.match(/^(Block|Program)/)),
+  isBranchNode: (node: N) => Boolean(node.id.match(/^(If)/))
+}
+
 describe('tree to flow', () => {
   assets.forEach(([name, input, output]) => {
     it(name, async () => {
@@ -238,7 +246,7 @@ describe('tree to flow', () => {
       const expectedSanitized = sanitize(output)
 
       const data = getData(inputSanitized)
-      const flow = treeToFlow(data)
+      const flow = treeToFlow(data, props)
       const result = stringifyChart(flow.connections, data.closures)
 
       console.log(result)
@@ -255,7 +263,7 @@ describe('flow to tree', () => {
       const expectedSanitized = sanitize(input)
 
       const data = getData(inputSanitized)
-      const flow = flowToTree(data)
+      const flow = flowToTree(data, props)
       const result = stringifyChart(flow.connections, data.closures)
 
       console.log(result)
