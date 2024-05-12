@@ -164,9 +164,9 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         // console.time('simplify')
         for (const transformer of transformers) {
             try {
-                // console.log('Start up:', transformer.name);
+                console.log('Start up:', transformer.name);
                 await transformer.up({ ...this.options.up, editor: tempEditor })
-                // console.log('End up:', transformer.name);
+                console.log('End up:', transformer.name);
             } catch (e) {
                 await this.copy(tempEditor, this.editor)
                 throw e
@@ -211,9 +211,9 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         await this.copy(this.editor, tempEditor)
 
         for (const transformer of transformers) {
-            // console.log('Start down:', transformer.name);
+            console.log('Start down:', transformer.name);
             await transformer.down({ ...this.options.down, editor: tempEditor })
-            // console.log('End down:', transformer.name);
+            console.log('End down:', transformer.name, tempEditor.getConnections().length, tempEditor.getNodes().length);
         }
 
         const roots = structures(tempEditor).roots().nodes()
@@ -223,7 +223,15 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
 
         const root = roots[0]
 
-        return this.nodeIntoAST<R>(root, { ...this.options.down, editor: tempEditor })
+        try {
+            const ast = this.nodeIntoAST<R>(root, { ...this.options.down, editor: tempEditor })
+
+            console.log('toAST', ast)
+            return ast
+        } catch (e) {
+            console.error('toAST: ', e)
+            throw e
+        }
     }
 
     private async copy(from: NodeEditor<Schemes>, to: NodeEditor<Schemes>) {

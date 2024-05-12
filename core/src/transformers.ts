@@ -1,12 +1,12 @@
 /* eslint-disable max-statements */
-import { getUID } from 'rete'
 import { structures } from 'rete-structures'
 
-import { C, Closures, Marker, N } from './utils'
+import { C, Closures, Marker, N } from './utils2'
 
-export function treeToFlow(data: { nodes: N[], connections: C[], closures: Closures }, props: {
- isBlock: (node: N) => boolean
- isStartNode: (node: N) => boolean
+export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[], connections: Con[], closures: Closures }, props: {
+ isBlock: (node: Node) => false | RegExp | string
+ isStartNode: (node: Node) => boolean
+ createConnection: (source: Node, sourceOutput: string, target: Node, targetInput: string, options?: { isLoop?: boolean, identifier?: string }) => Con
 }) {
   console.time('treeToFlow')
   const graph = structures({
@@ -15,9 +15,9 @@ export function treeToFlow(data: { nodes: N[], connections: C[], closures: Closu
   })
   const roots = graph.nodes().filter(props.isStartNode)
 
-  const markers: Record<N['id'], Marker[]> = {}
+  const markers: Record<string, Marker[]> = {}
 
-  function traverse(node: N, context: Marker[] = []) {
+  function traverse(node: Node, context: Marker[] = []) {
     const outgoerConnections = graph.connections().filter(c => c.source === node.id)
 
     for (let index = 0; index < outgoerConnections.length; index++) {
@@ -56,7 +56,7 @@ export function treeToFlow(data: { nodes: N[], connections: C[], closures: Closu
           nodes: mutableGraph.nodes(),
           connections: [
             ...mutableGraph.connections().filter(c => c.id !== nextContext.id),
-            { source: leaf.id, sourceOutput: 'bind', target: nextContext.target, id: getUID() }
+            props.createConnection(leaf, 'bind', mutableGraph.nodes().find(n => n.id === nextContext.target)!, 'bind')
           ]
         })
       }
@@ -64,8 +64,19 @@ export function treeToFlow(data: { nodes: N[], connections: C[], closures: Closu
   }
 
   // normalize body indices
-  for (const c of mutableGraph.connections()) {
-    c.sourceOutput = c.sourceOutput.replace('body 0', 'bind')
+  for (const c of [...mutableGraph.connections()]) {
+    const source = mutableGraph.nodes().find(n => n.id === c.source)!
+    const isBlock = props.isBlock(source)
+
+    if (isBlock && c.sourceOutput.match(isBlock)) {
+      mutableGraph = structures({
+        nodes: mutableGraph.nodes(),
+        connections: [
+          ...mutableGraph.connections().filter(con => con.id !== c.id),
+          props.createConnection(mutableGraph.nodes().find(n => n.id === c.source)!, 'bind', mutableGraph.nodes().find(n => n.id === c.target)!, 'bind')
+        ]
+      })
+    }
   }
 
   console.timeEnd('treeToFlow')
@@ -75,9 +86,12 @@ export function treeToFlow(data: { nodes: N[], connections: C[], closures: Closu
   }
 }
 
-export function flowToTree(data: { nodes: N[], connections: C[], closures: Closures }, props: {
-  isBranchNode: (node: N) => boolean,
-  isBlock: (node: N) => boolean
+export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[], connections: Con[], closures: Closures }, props: {
+  isBranchNode: (node: Node) => boolean,
+  isBlock: (node: Node) => boolean | RegExp,
+  getBlockParameterName: (node: Node) => { array: boolean, key: string },
+  isRoot: (node: Node) => boolean,
+  createConnection: (source: Node, sourceOutput: string, target: Node, targetInput: string, options?: { isLoop?: boolean, identifier?: string }) => Con
 }) {
   console.time('flowToTree')
   const nodes = [...data.nodes]
@@ -110,9 +124,9 @@ export function flowToTree(data: { nodes: N[], connections: C[], closures: Closu
 
   const nodeParents = getNodesParents(data.closures)
 
-  const visited = new Map<N['id'], N[]>()
+  const visited = new Map<Node['id'], Node[]>()
 
-  function markBranchingScopes(node: N, scopes: { start: N, exit: N }[] = []) {
+  function markBranchingScopes(node: Node, scopes: { start: Node, exit: Node }[] = []) {
     if (visited.has(node.id)) return
 
     const isBranchNode = props.isBranchNode(node)
@@ -134,15 +148,15 @@ export function flowToTree(data: { nodes: N[], connections: C[], closures: Closu
     }
   }
 
-  const roots = graph.roots().nodes()
+  const roots = graph.nodes().filter(props.isRoot)
 
   for (const root of roots) {
     markBranchingScopes(root)
   }
 
-  const indices = new Map<N['id'], number>()
+  const indices = new Map<Node['id'], number>()
 
-  function traverse(node: N, startNode: N, markers = new Set<string>(), traversed = new Set<N['id']>()) {
+  function traverse(node: Node, startNode: Node, markers = new Set<string>(), traversed = new Set<Node['id']>()) {
     if (traversed.has(node.id)) return markers
     traversed.add(node.id)
     const isStart = node.id === startNode.id
@@ -175,8 +189,8 @@ export function flowToTree(data: { nodes: N[], connections: C[], closures: Closu
     nodes: graph.nodes(),
     connections: graph.connections()
   })
-  let leaves: N[] = []
-  const processed = new Set<N['id']>()
+  let leaves: Node[] = []
+  const processed = new Set<Node['id']>()
 
   while ((leaves = mutableGraph.difference({
     nodes: mutableGraph.nodes().filter(n => processed.has(n.id)),
@@ -187,12 +201,16 @@ export function flowToTree(data: { nodes: N[], connections: C[], closures: Closu
 
     processed.add(leaf.id)
 
-    for (const marker of markers) {
+    for (const marker of Array.from(markers)) {
       const predecessorsIds = mutableGraph.predecessors(marker).nodes().map(n => n.id)
       const isMain = predecessorsIds.every(id => !markers.has(id))
 
       if (isMain) {
         const index = (indices.get(marker) || 0) - 1
+        const source = mutableGraph.nodes().find(n => n.id === marker)!
+        const outputMeta = props.getBlockParameterName(source)
+
+        if (!outputMeta.array) throw new Error('Not supported yet')
 
         indices.set(marker, index)
 
@@ -200,7 +218,7 @@ export function flowToTree(data: { nodes: N[], connections: C[], closures: Closu
           nodes: mutableGraph.nodes(),
           connections: [
             ...mutableGraph.connections().filter(c => c.target !== leaf.id),
-            { source: marker, sourceOutput: `body ${index}`, target: leaf.id, id: getUID() }
+            props.createConnection(source, `${outputMeta.key}[${index}]`, leaf, 'bind')
           ]
         })
         break
@@ -209,11 +227,25 @@ export function flowToTree(data: { nodes: N[], connections: C[], closures: Closu
   }
 
   // normalize body indices
-  for (const c of mutableGraph.connections()) {
+  for (const c of [...mutableGraph.connections()]) {
     const minIndex = indices.get(c.source) || 0
-    const bodyRegexp = /^body (-+\d+)$/
+    const source = mutableGraph.nodes().find(n => n.id === c.source)!
+    const outputMeta = props.getBlockParameterName(source)
 
-    c.sourceOutput = c.sourceOutput.replace(bodyRegexp, (_, index) => `body ${parseInt(index) - minIndex}`)
+    if (!outputMeta.array) throw new Error('Not supported yet')
+    const bodyRegexp = new RegExp('^' + outputMeta.key + '\\[(-+\\d+)\\]$')
+
+    if (c.sourceOutput.match(bodyRegexp)) {
+      const index = c.sourceOutput.match(bodyRegexp)![1]
+
+      mutableGraph = structures({
+        nodes: mutableGraph.nodes(),
+        connections: [
+          ...mutableGraph.connections().filter(con => con.id !== c.id),
+          props.createConnection(mutableGraph.nodes().find(n => n.id === c.source)!, `${outputMeta.key}[${parseInt(index) - minIndex}]`, mutableGraph.nodes().find(n => n.id === c.target)!, 'bind')
+        ]
+      })
+    }
   }
 
   console.timeEnd('flowToTree')

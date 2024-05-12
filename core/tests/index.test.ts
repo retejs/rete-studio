@@ -4,8 +4,9 @@
 globalThis.crypto = require('crypto')
 import { describe, expect, it } from '@jest/globals'
 
-import { flowToTree, treeToFlow } from './transformers'
-import { N, comparable, getData, sanitize, stringifyChart } from './utils'
+import { flowToTree, treeToFlow } from '../src/transformers'
+import { N, comparable, getData, sanitize, stringifyChart } from '../src/utils2'
+import { getUID } from 'rete'
 
 const numberOfIfs = 25
 
@@ -13,13 +14,13 @@ const assets = [
   ['t', `
   flowchart LR
 
-  Program -->|body 0| Statement1
-  Program -->|body 1| If1
+  Program -->|body[0]| Statement1
+  Program -->|body[1]| If1
   If1 -->|consequent| Block1
-  Block1 -->|body 0| Statement2
-  Block1 -->|body 1| Statement2.5
+  Block1 -->|body[0]| Statement2
+  Block1 -->|body[1]| Statement2.5
   If1 -->|alternate| Placeholder1
-  Program -->|body 2| Statement3
+  Program -->|body[2]| Statement3
   `,
   `
   flowchart LR
@@ -36,9 +37,9 @@ const assets = [
   ['program statements',`
     flowchart LR
 
-    Program -->|body 0| Statement1
-    Program -->|body 1| Statement2
-    Program -->|body 2| Statement3
+    Program -->|body[0]| Statement1
+    Program -->|body[1]| Statement2
+    Program -->|body[2]| Statement3
   `, `
   flowchart LR
 
@@ -49,10 +50,10 @@ const assets = [
   ['tree to flow1', `
     flowchart LR
 
-    Program -->|body 0| If1
+    Program -->|body[0]| If1
     If1 -->|consequent| Block1
-    Block1 -->|body 0| Statement1
-    Block1 -->|body 1| Statement2
+    Block1 -->|body[0]| Statement1
+    Block1 -->|body[1]| Statement2
     If1 -->|alternate| Placeholder1
   `, `
     flowchart LR
@@ -67,17 +68,17 @@ const assets = [
   ['tree to flow', `
     flowchart LR
 
-    Program -->|body 0| If1
+    Program -->|body[0]| If1
     If1 -->|consequent| Block1
     If1 -->|alternate| Placeholder0
-    Block1 -->|body 0| Statement1
-    Block1 -->|body 1| If2
+    Block1 -->|body[0]| Statement1
+    Block1 -->|body[1]| If2
     If2 -->|consequent| Block2
-    Block2 -->|body 0| Statement2
+    Block2 -->|body[0]| Statement2
     If2 -->|alternate| Placeholder1
-    Block1 -->|body 2| If3
+    Block1 -->|body[2]| If3
     If3 -->|consequent| Block3
-    Block3 -->|body 0| Statement3
+    Block3 -->|body[0]| Statement3
     If3 -->|alternate| Placeholder2
   
     subgraph 1
@@ -118,8 +119,8 @@ const assets = [
   ['program', `
     flowchart LR
       
-    Program -->|body 0| If1
-    Program -->|body 1| If2
+    Program -->|body[0]| If1
+    Program -->|body[1]| If2
     If1 -->|consequent| Statement1
     If1 -->|alternate| Placeholder1
   `, `
@@ -134,7 +135,7 @@ const assets = [
   ['a lot of Ifs', `
   flowchart LR
 
-  ${new Array(numberOfIfs).fill(null).map((_, i) => `Program -->|body ${i}| If${i}
+  ${new Array(numberOfIfs).fill(null).map((_, i) => `Program -->|body[${i}]| If${i}
   If${i} -->|consequent| Block${i}
   If${i} -->|alternate| Placeholder${i}`).join('\n')}
   `,`flowchart LR
@@ -157,9 +158,9 @@ const assets = [
   If1 -->|alternate| Block2
   If2 -->|consequent| Block3
   If2 -->|alternate| Block4
-  Block1 -->|body 0| If2
-  Block1 -->|body 1| Statement1
-  Program -->|body 0| If1
+  Block1 -->|body[0]| If2
+  Block1 -->|body[1]| Statement1
+  Program -->|body[0]| If1
 `, `
   flowchart LR
 
@@ -179,9 +180,9 @@ const assets = [
   If1 -->|alternate| Block2
   If2 -->|consequent| Block3
   If2 -->|alternate| Block4
-  Program -->|body 0| If1
-  Program -->|body 1| If2
-  Program -->|body 2| Statement1
+  Program -->|body[0]| If1
+  Program -->|body[1]| If2
+  Program -->|body[2]| Statement1
 `, `
   flowchart LR
       
@@ -198,10 +199,10 @@ const assets = [
 ['closure', `
   flowchart LR
 
-  Program -->|body 0| Block1
-  Block1 -->|body 0| Block2
-  Block1 -->|body 1| Statement4
-  Block2 -->|body 0| Statement3
+  Program -->|body[0]| Block1
+  Block1 -->|body[0]| Block2
+  Block1 -->|body[1]| Statement4
+  Block2 -->|body[0]| Statement3
 
   subgraph 1
   Block2
@@ -235,8 +236,19 @@ const assets = [
 
 const props = {
   isStartNode: (source: N) => Boolean(source.id.match(/^(Program)/)),
-  isBlock: (source: N) => Boolean(source.id.match(/^(Block|Program)/)),
-  isBranchNode: (node: N) => Boolean(node.id.match(/^(If)/))
+  isBlock: (source: N) => source.id.match(/^(Block|Program)/) ? /^body\[0\]$/ : false,
+  isBranchNode: (node: N) => Boolean(node.id.match(/^(If)/)),
+  isRoot: (node: N) => Boolean(node.id.match(/^(Program)/)),
+  getBlockParameterName(node: N) {
+    if (node.id.startsWith('Program')) return { array: true, key: 'body' }
+    if (node.id.startsWith('VariableDeclaration')) return { array: true, key: 'declarations' }
+    if (node.id.startsWith('CatchClause')) return { array: false, key: 'body' }
+    if (node.id.startsWith('ObjectPattern')) return { array: true, key: 'properties' }
+    return { array: true, key: 'body' }
+  },
+  createConnection: (source: N, sourceOutput: string, target: N, targetInput: string) => {
+    return { source: source.id, sourceOutput, target: target.id, targetInput, id: getUID() }
+  }
 }
 
 describe('tree to flow', () => {
