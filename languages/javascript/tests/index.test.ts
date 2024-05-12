@@ -192,7 +192,43 @@ const assets = [
   Block2 -->|bind| If2
   Block3 -->|bind| Statement1
   Block4 -->|bind| Statement1
-`]
+`],
+['closure', `
+  flowchart LR
+
+  Program -->|body 0| Block1
+  Block1 -->|body 0| Block2
+  Block1 -->|body 1| Statement4
+  Block2 -->|body 0| Statement3
+
+  subgraph 1
+  Block2
+  Statement3
+  end
+  subgraph 2
+  1
+  Block1
+  Statement4
+  end
+  `, `
+  flowchart LR
+  
+  Program -->|bind| Block1
+  Block1 -->|bind| Block2
+  Block2 -->|bind| Statement3
+  Statement3 -->|bind| Statement4
+  
+  subgraph 1
+  Block2
+  Statement3
+  subgraph 2
+  1
+  Block1
+  Statement4
+  end
+  end
+  `
+]
 ]
 
 describe('tree to flow', () => {

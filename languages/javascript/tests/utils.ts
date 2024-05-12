@@ -3,6 +3,7 @@
 export type N = { id: string }
 export type C = { sourceOutput: string, source: string, target: string, id: string }
 export type Marker = { index: number, context: C }
+export type Closures = Record<string, Set<string>>
 
 export function comparable(s: string) {
   const data = getData(s)
@@ -32,7 +33,7 @@ function parseConnection(line: string): C {
   throw new Error('Invalid connection. It should be in the format "source -->|key| target"')
 }
 
-export function getData(s: string): { nodes: N[], connections: C[], closures: Record<string, Set<string>> } {
+export function getData(s: string): { nodes: N[], connections: C[], closures: Closures } {
   const lines = s.replace(/^flowchart LR/, '').trim().split('\n')
   const connections: C[] = lines
     .filter(line => !line.startsWith('subgraph') && !line.startsWith('end'))

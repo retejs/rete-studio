@@ -1,9 +1,9 @@
 /* eslint-disable max-statements */
 import { structures } from 'rete-structures'
 
-import { C, Marker, N } from './utils'
+import { C, Closures, Marker, N } from './utils'
 
-export function treeToFlow(data: { nodes: N[], connections: C[] }) {
+export function treeToFlow(data: { nodes: N[], connections: C[], closures: Closures }) {
   console.time('treeToFlow')
   const graph = structures({
     nodes: [...data.nodes],
@@ -70,7 +70,7 @@ export function treeToFlow(data: { nodes: N[], connections: C[] }) {
   }
 }
 
-export function flowToTree(data: { nodes: N[], connections: C[] }) {
+export function flowToTree(data: { nodes: N[], connections: C[], closures: Closures }) {
   console.time('flowToTree')
   const nodes = [...data.nodes]
   const connections = [...data.connections]
@@ -78,6 +78,29 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
     nodes,
     connections
   })
+
+  function getNodesParents(scopesNodes: Closures) {
+    const nestedNodes: Record<string, string[]> = {}
+
+    // Helper function to recursively process nested scopes
+    function processScope(scopeId: string, nodeIds?: Set<string>) {
+      (nodeIds || []).forEach(id => {
+        if (!scopesNodes[id]) {
+          nestedNodes[id] = [scopeId, ...(nestedNodes[id] || [])]
+        } else {
+          processScope(scopeId, scopesNodes[id])
+        }
+      })
+    }
+
+    for (const scopeId in scopesNodes) {
+      processScope(scopeId, scopesNodes[scopeId])
+    }
+
+    return nestedNodes
+  }
+
+  const nodeParents = getNodesParents(data.closures)
 
   const visited = new Map<N['id'], N[]>()
 
@@ -111,9 +134,10 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
 
   const indices = new Map<N['id'], number>()
 
-  function traverse(node: N, isStart: boolean, markers = new Set<string>(), traversed = new Set<N['id']>()) {
+  function traverse(node: N, startNode: N, markers = new Set<string>(), traversed = new Set<N['id']>()) {
     if (traversed.has(node.id)) return markers
     traversed.add(node.id)
+    const isStart = node.id === startNode.id
 
     const incomers = graph.connections().filter(c => c.target === node.id)
 
@@ -121,7 +145,8 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
       const inc = incomers[index]
 
       // TODO subtract scopes
-      const sameScope = visited.get(inc.source)!.length <= visited.get(node.id)!.length
+      const sameScope = (visited.get(inc.source) || []).length <= (visited.get(node.id) || []).length
+        && (nodeParents[inc.source] || []).length <= (nodeParents[startNode.id] || []).length
 
       if (isStart && inc.source.match(/^(If)/)) {
         continue
@@ -130,11 +155,12 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
       } else {
         const n = graph.nodes().find(n => n.id === inc.source)!
 
-        traverse(n, false, markers, traversed)
+        traverse(n, startNode, markers, traversed)
       }
     }
     return markers
   }
+
 
   let mutableGraph = structures({
     nodes: graph.nodes(),
@@ -148,7 +174,7 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
     connections: mutableGraph.connections()
   }).leaves().nodes(), leaves.length > 0)) {
     const leaf = leaves[0]
-    const markers = traverse(leaf, true)
+    const markers = traverse(leaf, leaf)
 
     processed.add(leaf.id)
 
