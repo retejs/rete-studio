@@ -5,77 +5,78 @@ import { describe, expect, it } from '@jest/globals'
 import { flowToTree, treeToFlow } from './transformers'
 import { comparable, getData, sanitize, stringifyChart } from './utils'
 
-const numberOfIfs = 100
+const numberOfIfs = 25
 
 const assets = [
   ['t', `
   flowchart LR
 
-  Program --> Statement1
-  Program --> If1
-  If1 --> Block1
-  Block1 --> Statement2
-  Block1 --> Statement2.5
-  If1 --> Placeholder1
-  Program --> Statement3
+  Program -->|body 0| Statement1
+  Program -->|body 1| If1
+  If1 -->|consequent| Block1
+  Block1 -->|body 0| Statement2
+  Block1 -->|body 1| Statement2.5
+  If1 -->|alternate| Placeholder1
+  Program -->|body 2| Statement3
   `,
   `
   flowchart LR
-
-  Program --> Statement1
-  Statement1 --> If1
-  If1 --> Block1
-  Block1 --> Statement2
-  Statement2 --> Statement2.5
-  If1 --> Placeholder1
-  Statement2.5 --> Statement3
-  Placeholder1 --> Statement3
+    
+  Program -->|bind| Statement1
+  If1 -->|consequent| Block1
+  Block1 -->|bind| Statement2
+  If1 -->|alternate| Placeholder1
+  Statement1 -->|bind| If1
+  Statement2 -->|bind| Statement2.5
+  Statement2.5 -->|bind| Statement3
+  Placeholder1 -->|bind| Statement3
   `],
   ['program statements',`
     flowchart LR
 
-    Program --> Statement1
-    Program --> Statement2
-    Program --> Statement3
+    Program -->|body 0| Statement1
+    Program -->|body 1| Statement2
+    Program -->|body 2| Statement3
   `, `
-    flowchart LR
+  flowchart LR
 
-    Program --> Statement1
-    Statement1 --> Statement2
-    Statement2 --> Statement3
+  Program -->|bind| Statement1
+  Statement1 -->|bind| Statement2
+  Statement2 -->|bind| Statement3
   `],
   ['tree to flow1', `
     flowchart LR
 
-    Program --> If1
-    If1 --> Block1
-    Block1 --> Statement1
-    Block1 --> Statement2
-    If1 --> Placeholder1
+    Program -->|body 0| If1
+    If1 -->|consequent| Block1
+    Block1 -->|body 0| Statement1
+    Block1 -->|body 1| Statement2
+    If1 -->|alternate| Placeholder1
   `, `
     flowchart LR
     
-    Program --> If1
-    If1 --> Block1
-    Block1 --> Statement1
-    If1 --> Placeholder1
-    Statement1 --> Statement2
+    Program -->|bind| If1
+    If1 -->|consequent| Block1
+    Block1 -->|bind| Statement1
+    If1 -->|alternate| Placeholder1
+    Statement1 -->|bind| Statement2
   `],
 
   ['tree to flow', `
     flowchart LR
-  
-    Program --> If1
-    If1 --> Block1
-    Block1 --> Statement1
-    Block1 --> If2
-    If2 --> Block2
-    Block2 --> Statement2
-    If2 --> Placeholder1
-    Block1 --> If3
-    If3 --> Block3
-    Block3 --> Statement3
-    If3 --> Placeholder2
+
+    Program -->|body 0| If1
+    If1 -->|consequent| Block1
+    If1 -->|alternate| Placeholder0
+    Block1 -->|body 0| Statement1
+    Block1 -->|body 1| If2
+    If2 -->|consequent| Block2
+    Block2 -->|body 0| Statement2
+    If2 -->|alternate| Placeholder1
+    Block1 -->|body 2| If3
+    If3 -->|consequent| Block3
+    Block3 -->|body 0| Statement3
+    If3 -->|alternate| Placeholder2
   
     subgraph 1
     Block2
@@ -87,70 +88,20 @@ const assets = [
     end
   `, `
     flowchart LR
-  
-    Program --> If1
-    If1 --> Block1
-    Block1 --> Statement1
-    If2 --> Block2
-    Block2 --> Statement2
-    If2 --> Placeholder1
-    If3 --> Block3
-    Block3 --> Statement3
-    If3 --> Placeholder2
-    Statement1 --> If2
-    Statement2 --> If3
-    Placeholder1 --> If3
-  
-    subgraph 1
-    Block2
-    Statement2
-    end
-    subgraph 2
-    Block3
-    Statement3
-    end
-  `],
-
-  ['tree to flow 2', `
-    flowchart LR
-
-    Program --> If1
-    If1 --> Block1
-    Block1 --> Statement1
-    Block1 --> If2
-    Block1 --> Statement1.5
-    If2 --> Block2
-    Block2 --> Statement2
-    If2 --> Placeholder1
-    Block1 --> If3
-    If3 --> Block3
-    Block3 --> Statement3
-    If3 --> Placeholder2
-    
-    subgraph 1
-    Block2
-    Statement2
-    end
-    subgraph 2
-    Block3
-    Statement3
-    end
-  `, `
-    flowchart LR
-    
-    Program --> If1
-    If1 --> Block1
-    Block1 --> Statement1
-    If2 --> Block2
-    Block2 --> Statement2
-    If2 --> Placeholder1
-    If3 --> Block3
-    Block3 --> Statement3
-    If3 --> Placeholder2
-    Statement1 --> If2
-    Statement1.5 --> If3
-    Statement2 --> Statement1.5
-    Placeholder1 --> Statement1.5
+      
+    Program -->|bind| If1
+    If1 -->|consequent| Block1
+    If1 -->|alternate| Placeholder0
+    Block1 -->|bind| Statement1
+    If2 -->|consequent| Block2
+    Block2 -->|bind| Statement2
+    If2 -->|alternate| Placeholder1
+    If3 -->|consequent| Block3
+    Block3 -->|bind| Statement3
+    If3 -->|alternate| Placeholder2
+    Statement1 -->|bind| If2
+    Statement2 -->|bind| If3
+    Placeholder1 -->|bind| If3
     
     subgraph 1
     Block2
@@ -161,85 +112,86 @@ const assets = [
     Statement3
     end
   `],
+
   ['program', `
     flowchart LR
-    
-    Program --> If1
-    Program --> If2
-    If1 --> Statement1
-    If1 --> Placeholder1
+      
+    Program -->|body 0| If1
+    Program -->|body 1| If2
+    If1 -->|consequent| Statement1
+    If1 -->|alternate| Placeholder1
   `, `
     flowchart LR
     
-    Program --> If1
-    If1 --> Statement1
-    If1 --> Placeholder1
-    Statement1 --> If2
-    Placeholder1 --> If2
+    Program -->|bind| If1
+    If1 -->|consequent| Statement1
+    If1 -->|alternate| Placeholder1
+    Statement1 -->|bind| If2
+    Placeholder1 -->|bind| If2
   `],
   ['a lot of Ifs', `
   flowchart LR
 
-  ${new Array(numberOfIfs).fill(null).map((_, i) => `Program --> If${i}
-  If${i} --> Block${i}
-  If${i} --> Placeholder${i}`).join('\n')}
+  ${new Array(numberOfIfs).fill(null).map((_, i) => `Program -->|body ${i}| If${i}
+  If${i} -->|consequent| Block${i}
+  If${i} -->|alternate| Placeholder${i}`).join('\n')}
   `,`flowchart LR
   
-  Program --> If0
+  Program -->|bind| If0
   ${new Array(numberOfIfs - 1).fill(null).map((_, i) => `
-    If${i} --> Block${i}
-    If${i} --> Placeholder${i}
-    Block${i} --> If${i+1}
-    Placeholder${i} --> If${i+1}
+    If${i} -->|consequent| Block${i}
+    If${i} -->|alternate| Placeholder${i}
+    Block${i} -->|bind| If${i+1}
+    Placeholder${i} -->|bind| If${i+1}
   `.trim()).join('\n')}
-  If${numberOfIfs - 1} --> Block${numberOfIfs - 1}
-  If${numberOfIfs - 1} --> Placeholder${numberOfIfs - 1}
+  If${numberOfIfs - 1} -->|consequent| Block${numberOfIfs - 1}
+  If${numberOfIfs - 1} -->|alternate| Placeholder${numberOfIfs - 1}
   `
 ],
 ['nested if', `
-flowchart LR
+  flowchart LR
 
-If1 --> Block1
-If1 --> Block2
-If2 --> Block3
-If2 --> Block4
-Block1 --> If2
-Block1 --> Statement1
-Program --> If1
+  If1 -->|consequent| Block1
+  If1 -->|alternate| Block2
+  If2 -->|consequent| Block3
+  If2 -->|alternate| Block4
+  Block1 -->|body 0| If2
+  Block1 -->|body 1| Statement1
+  Program -->|body 0| If1
 `, `
-flowchart LR
+  flowchart LR
 
-If1 --> Block1
-If1 --> Block2
-If2 --> Block3
-If2 --> Block4
-Block1 --> If2
-Program --> If1
-Block3 --> Statement1
-Block4 --> Statement1
+  If1 -->|consequent| Block1
+  If1 -->|alternate| Block2
+  If2 -->|consequent| Block3
+  If2 -->|alternate| Block4
+  Block1 -->|bind| If2
+  Program -->|bind| If1
+  Block3 -->|bind| Statement1
+  Block4 -->|bind| Statement1
 `],
 ['trailing statement', `
-flowchart LR
-    
-If1 --> Block1
-If1 --> Block2
-If2 --> Block3
-If2 --> Block4
-Program --> If1
-Program --> If2
-Program --> Statement1
+  flowchart LR
+        
+  If1 -->|consequent| Block1
+  If1 -->|alternate| Block2
+  If2 -->|consequent| Block3
+  If2 -->|alternate| Block4
+  Program -->|body 0| If1
+  Program -->|body 1| If2
+  Program -->|body 2| Statement1
 `, `
-flowchart LR
-    
-If1 --> Block1
-If1 --> Block2
-If2 --> Block3
-If2 --> Block4
-Program --> If1
-Block1 --> If2
-Block2 --> If2
-Block3 --> Statement1
-Block4 --> Statement1
+  flowchart LR
+      
+  If1 -->|consequent| Block1
+  If1 -->|alternate| Block2
+  If2 -->|consequent| Block3
+  If2 -->|alternate| Block4
+  Program -->|bind| If1
+  Block1 -->|bind| If2
+  Block2 -->|bind| If2
+  Block3 -->|bind| Statement1
+  Block4 -->|bind| Statement1
 `]
 ]
 

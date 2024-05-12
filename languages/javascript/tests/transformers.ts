@@ -51,11 +51,16 @@ export function treeToFlow(data: { nodes: N[], connections: C[] }) {
           nodes: mutableGraph.nodes(),
           connections: [
             ...mutableGraph.connections().filter(c => c.id !== nextContext.id),
-            { source: leaf.id, target: nextContext.target, id: [leaf.id, nextContext.target].join('->') }
+            { source: leaf.id, sourceOutput: 'bind', target: nextContext.target, id: [leaf.id, nextContext.target].join('->') }
           ]
         })
       }
     }
+  }
+
+  // normalize body indices
+  for (const c of mutableGraph.connections()) {
+    c.sourceOutput = c.sourceOutput.replace('body 0', 'bind')
   }
 
   console.timeEnd('treeToFlow')
@@ -104,6 +109,7 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
     markBranchingScopes(root)
   }
 
+  const indices = new Map<N['id'], number>()
 
   function traverse(node: N, isStart: boolean, markers = new Set<string>(), traversed = new Set<N['id']>()) {
     if (traversed.has(node.id)) return markers
@@ -151,16 +157,28 @@ export function flowToTree(data: { nodes: N[], connections: C[] }) {
       const isMain = predecessorsIds.every(id => !markers.has(id))
 
       if (isMain) {
+        const index = (indices.get(marker) || 0) - 1
+
+        indices.set(marker, index)
+
         mutableGraph = structures({
           nodes: mutableGraph.nodes(),
           connections: [
             ...mutableGraph.connections().filter(c => c.target !== leaf.id),
-            { source: marker, target: leaf.id, id: [marker, leaf.id].join('->') }
+            { source: marker, sourceOutput: `body ${index}`, target: leaf.id, id: [marker, leaf.id].join('->') }
           ]
         })
         break
       }
     }
+  }
+
+  // normalize body indices
+  for (const c of mutableGraph.connections()) {
+    const minIndex = indices.get(c.source) || 0
+    const bodyRegexp = /^body (-+\d+)$/
+
+    c.sourceOutput = c.sourceOutput.replace(bodyRegexp, (_, index) => `body ${parseInt(index) - minIndex}`)
   }
 
   console.timeEnd('flowToTree')
