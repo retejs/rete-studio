@@ -89,6 +89,7 @@ export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[],
 export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[], connections: Con[], closures: Closures }, props: {
   isBranchNode: (node: Node) => boolean,
   isBlock: (node: Node) => boolean | RegExp,
+  isCompatible(source: Node, target: Node): boolean,
   getBlockParameterName: (node: Node) => { array: boolean, key: string },
   isRoot: (node: Node) => boolean,
   createConnection: (source: Node, sourceOutput: string, target: Node, targetInput: string, options?: { isLoop?: boolean, identifier?: string }) => Con
@@ -137,7 +138,7 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
     }
 
     const exit = isBranchNode && outgoers.nodes().length > 1 ? outgoers.nodes()
-      .map(n => graph.successors(n.id))
+      .map(n => graph.successors(n.id).union({ nodes: [n], connections: [] }))
       .reduce((a, b) => a.intersection({ nodes: b.nodes(), connections: b.connections() }))
       .roots().nodes()[0] : null
 
@@ -168,12 +169,12 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
       const source = graph.nodes().find(n => n.id === inc.source)!
 
       // TODO subtract scopes
-      const sameScope = (visited.get(inc.source) || []).length <= (visited.get(node.id) || []).length
+      const sameScope = (visited.get(inc.source) || []).length <= (visited.get(startNode.id) || []).length
         && (nodeParents[inc.source] || []).length <= (nodeParents[startNode.id] || []).length
 
       if (isStart && props.isBranchNode(source)) {
         continue
-      } else if (props.isBlock(source) && sameScope) {
+      } else if (props.isBlock(source) && sameScope && props.isCompatible(source, startNode)) {
         markers.add(inc.source)
       } else {
         const n = graph.nodes().find(n => n.id === inc.source)!

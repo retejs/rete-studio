@@ -11,6 +11,30 @@ import { getUID } from 'rete'
 const numberOfIfs = 25
 
 const assets = [
+  ['if', `
+  flowchart LR
+
+  Program -->|body[0]| IfStatement1
+  Program -->|body[1]| IfStatement2
+  IfStatement1 -->|consequent| Block1
+  IfStatement1 -->|alternate| Placeholder1
+  Block1 -->|body[0]| Statement1
+  IfStatement2 -->|consequent| Block2
+  IfStatement2 -->|alternate| Placeholder2
+  Block2 -->|body[0]| Statement2
+  `, `
+  flowchart LR
+
+  IfStatement1 -->|consequent| Block1
+  IfStatement1 -->|alternate| Placeholder1
+  IfStatement2 -->|consequent| Block2
+  IfStatement2 -->|alternate| Placeholder2
+  Placeholder1 -->|bind| IfStatement2
+  Statement1 -->|bind| IfStatement2
+  Program -->|bind| IfStatement1
+  Block1 -->|bind| Statement1
+  Block2 -->|bind| Statement2
+  `],
   ['t', `
   flowchart LR
 
@@ -24,7 +48,7 @@ const assets = [
   `,
   `
   flowchart LR
-    
+
   Program -->|bind| Statement1
   If1 -->|consequent| Block1
   Block1 -->|bind| Statement2
@@ -57,7 +81,7 @@ const assets = [
     If1 -->|alternate| Placeholder1
   `, `
     flowchart LR
-    
+
     Program -->|bind| If1
     If1 -->|consequent| Block1
     Block1 -->|bind| Statement1
@@ -80,7 +104,7 @@ const assets = [
     If3 -->|consequent| Block3
     Block3 -->|body[0]| Statement3
     If3 -->|alternate| Placeholder2
-  
+
     subgraph 1
     Block2
     Statement2
@@ -91,7 +115,7 @@ const assets = [
     end
   `, `
     flowchart LR
-      
+
     Program -->|bind| If1
     If1 -->|consequent| Block1
     If1 -->|alternate| Placeholder0
@@ -105,7 +129,7 @@ const assets = [
     Statement1 -->|bind| If2
     Statement2 -->|bind| If3
     Placeholder1 -->|bind| If3
-    
+
     subgraph 1
     Block2
     Statement2
@@ -118,14 +142,14 @@ const assets = [
 
   ['program', `
     flowchart LR
-      
+
     Program -->|body[0]| If1
     Program -->|body[1]| If2
     If1 -->|consequent| Statement1
     If1 -->|alternate| Placeholder1
   `, `
     flowchart LR
-    
+
     Program -->|bind| If1
     If1 -->|consequent| Statement1
     If1 -->|alternate| Placeholder1
@@ -139,7 +163,7 @@ const assets = [
   If${i} -->|consequent| Block${i}
   If${i} -->|alternate| Placeholder${i}`).join('\n')}
   `,`flowchart LR
-  
+
   Program -->|bind| If0
   ${new Array(numberOfIfs - 1).fill(null).map((_, i) => `
     If${i} -->|consequent| Block${i}
@@ -175,7 +199,7 @@ const assets = [
 `],
 ['trailing statement', `
   flowchart LR
-        
+
   If1 -->|consequent| Block1
   If1 -->|alternate| Block2
   If2 -->|consequent| Block3
@@ -185,7 +209,7 @@ const assets = [
   Program -->|body[2]| Statement1
 `, `
   flowchart LR
-      
+
   If1 -->|consequent| Block1
   If1 -->|alternate| Block2
   If2 -->|consequent| Block3
@@ -215,12 +239,12 @@ const assets = [
   end
   `, `
   flowchart LR
-  
+
   Program -->|bind| Block1
   Block1 -->|bind| Block2
   Block2 -->|bind| Statement3
   Statement3 -->|bind| Statement4
-  
+
   subgraph 1
   Block2
   Statement3
@@ -231,14 +255,35 @@ const assets = [
   end
   end
   `
-]
+],
+['variable', `
+  flowchart LR
+
+  Program -->|body[0]| VariableDeclaration1
+  VariableDeclaration1 -->|declarations[0]| VariableDeclarator
+  Program -->|body[1]| IfStatement1
+  IfStatement1 -->|consequent| Statement1
+`, `
+  flowchart LR
+
+  VariableDeclaration1 -->|declarations[0]| VariableDeclarator
+  IfStatement1 -->|consequent| Statement1
+  VariableDeclarator -->|bind| IfStatement1
+  Program -->|bind| VariableDeclaration1
+`]
 ]
 
 const props = {
   isStartNode: (source: N) => Boolean(source.id.match(/^(Program)/)),
-  isBlock: (source: N) => source.id.match(/^(Block|Program)/) ? /^body\[0\]$/ : false,
+  isBlock: (source: N) => source.id.match(/^(Block|Program|VariableDeclaration)/) ? /^body\[\d+\]$/ : false,
   isBranchNode: (node: N) => Boolean(node.id.match(/^(If)/)),
   isRoot: (node: N) => Boolean(node.id.match(/^(Program)/)),
+  isCompatible: (source: N, target: N) => {
+    // TODO refactor
+    // console.log(source.id, target.id)
+    if (source.id.startsWith('VariableDeclaration')) return target.id.startsWith('VariableDeclarator')
+    return true
+  },
   getBlockParameterName(node: N) {
     if (node.id.startsWith('Program')) return { array: true, key: 'body' }
     if (node.id.startsWith('VariableDeclaration')) return { array: true, key: 'declarations' }

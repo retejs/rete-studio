@@ -85,10 +85,10 @@ export function flowToTree<S extends ClassicSchemes, ASTNode extends ASTNodeBase
   isBranch(node: S['Node'], context: ToASTContext<ASTNode, S>): boolean
   isBlock(node: S['Node'], context: ToASTContext<ASTNode, S>): boolean
   getBranchNames(node: S['Node'], context: ToASTContext<ASTNode, S>): string[]
-  getBlockParameterName(node: S['Node'], context: ToASTContext<ASTNode, S>): { array: boolean, key: string }
-  isValidSubflow(entry: S['Node'], flow: S['Node'], context: ToASTContext<ASTNode, S>): boolean
+  getBlockParameterName(node: S['Node'], context: ToASTContext<ASTNode, S>): { array: boolean, key: string },
+  isValidSubflow(source: S['Node'], target: S['Node'], context: ToASTContext<ASTNode, S>): boolean
 }) {
-  const { isRoot, isBranch, isBlock, getBlockParameterName } = options
+  const { isRoot, isBranch, isBlock, isValidSubflow, getBlockParameterName } = options
 
   return async (context: ToASTContext<ASTNode, S>) => {
     const data = structures({
@@ -105,6 +105,7 @@ export function flowToTree<S extends ClassicSchemes, ASTNode extends ASTNodeBase
         isRoot: node => isRoot(node, context),
         isBlock: node => isBlock(node, context),
         getBlockParameterName: node => getBlockParameterName(node, context),
+        isCompatible: (source, target) => isValidSubflow(source, target, context),
         isBranchNode: node => isBranch(node, context),
         createConnection: (s, o, t, i, opts) => {
           if (!s.hasOutput(o)) s.addOutput(o, context.createOutput(o))
