@@ -1,3 +1,4 @@
+/* eslint-disable max-statements */
 import { NodeEditor } from 'rete'
 import {
   ASTNodeBase, BaseNode, BIND_KEY, Connection, Context, findLabeledStatement, forEach, getClosureDifferenceOld, getOutputNode,
@@ -8,6 +9,8 @@ import { } from 'rete-studio-core'
 
 import { Transformer } from './interface'
 
+
+// TODO move to rete-structures
 function bfs<S extends Schemes>(editor: NodeEditor<S>, startNode: S['Node'], condition: (node: S['Node']) => false | S['Node']) {
   const queue: S['Node'][] = []
   const visited = new Set<S['Node']>()
@@ -138,7 +141,7 @@ export class OmitLabeled<ASTNode extends ASTNodeBase, S extends Schemes> extends
       const inputs = editor.getConnections().filter(c => c.target === entry.id && c.targetInput === BIND_KEY)
       const existing = findLabeledStatement(context, entry.id, true)
 
-      if (existing) continue
+      if (existing && !editor.getConnections().some(c => c.source === existing.id)) continue
 
       const { labeledStatement } = await createLabeledClosure(entry)
 
