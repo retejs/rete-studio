@@ -19,6 +19,13 @@ export class TreeFlow<ASTNode extends ASTNodeBase, S extends Schemes> extends Tr
         if (['CatchClause'].includes(node.label)) return /^body$/
         return false
       },
+      getBlockParameterName(node) {
+        if (node.label === 'Program') return { array: true, key: 'body' }
+        if (node.label === 'VariableDeclaration') return { array: true, key: 'declarations' }
+        if (node.label === 'CatchClause') return { array: false, key: 'body' }
+        if (node.label === 'ObjectPattern') return { array: true, key: 'properties' }
+        return { array: true, key: 'body' }
+      },
       isBranch: node => {
         if (['IfStatement'].includes(node.label)) return /(alternate|consequent)/
         if (['TryStatement'].includes(node.label)) return /(block|handler|finalizer)/

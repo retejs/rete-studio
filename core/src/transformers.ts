@@ -6,6 +6,7 @@ import { C, Closures, Marker, N } from './utils2'
 export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[], connections: Con[], closures: Closures }, props: {
  isBlock: (node: Node) => false | RegExp | string
  isStartNode: (node: Node) => boolean
+ getBlockParameterName: (node: Node) => { array: boolean, key: string },
  createConnection: (source: Node, sourceOutput: string, target: Node, targetInput: string, options?: { isLoop?: boolean, identifier?: string }) => Con
 }) {
   console.time('treeToFlow')
@@ -41,7 +42,9 @@ export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[],
   const leaves = mutableGraph.leaves().nodes()
 
   for (const leaf of leaves) {
-    for (const marker of [...markers[leaf.id]].reverse()) {
+    const leafMarkers = markers[leaf.id]
+
+    for (const marker of [...leafMarkers].reverse()) {
       const isStillLeaf = mutableGraph.leaves().nodes().includes(leaf)
 
       if (!isStillLeaf) continue
@@ -68,14 +71,19 @@ export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[],
     const source = mutableGraph.nodes().find(n => n.id === c.source)!
     const isBlock = props.isBlock(source)
 
-    if (isBlock && c.sourceOutput.match(isBlock)) {
-      mutableGraph = structures({
-        nodes: mutableGraph.nodes(),
-        connections: [
-          ...mutableGraph.connections().filter(con => con.id !== c.id),
-          props.createConnection(mutableGraph.nodes().find(n => n.id === c.source)!, 'bind', mutableGraph.nodes().find(n => n.id === c.target)!, 'bind')
-        ]
-      })
+    if (isBlock) {
+      const parameterName = props.getBlockParameterName(source)
+      const regex = parameterName.array ? new RegExp('^' + parameterName.key + '\\[(-{0,1}\\d+)\\]$') : parameterName.key
+
+      if (c.sourceOutput.match(regex)) {
+        mutableGraph = structures({
+          nodes: mutableGraph.nodes(),
+          connections: [
+            ...mutableGraph.connections().filter(con => con.id !== c.id),
+            props.createConnection(mutableGraph.nodes().find(n => n.id === c.source)!, 'bind', mutableGraph.nodes().find(n => n.id === c.target)!, 'bind')
+          ]
+        })
+      }
     }
   }
 
@@ -211,15 +219,13 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
         const source = mutableGraph.nodes().find(n => n.id === marker)!
         const outputMeta = props.getBlockParameterName(source)
 
-        if (!outputMeta.array) throw new Error('Not supported yet')
-
         indices.set(marker, index)
 
         mutableGraph = structures({
           nodes: mutableGraph.nodes(),
           connections: [
             ...mutableGraph.connections().filter(c => c.target !== leaf.id),
-            props.createConnection(source, `${outputMeta.key}[${index}]`, leaf, 'bind')
+            props.createConnection(source, outputMeta.array ? `${outputMeta.key}[${index}]` : outputMeta.key, leaf, 'bind')
           ]
         })
         break
@@ -233,8 +239,7 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
     const source = mutableGraph.nodes().find(n => n.id === c.source)!
     const outputMeta = props.getBlockParameterName(source)
 
-    if (!outputMeta.array) throw new Error('Not supported yet')
-    const bodyRegexp = new RegExp('^' + outputMeta.key + '\\[(-+\\d+)\\]$')
+    const bodyRegexp = outputMeta.array ? new RegExp('^' + outputMeta.key + '\\[(-{0,1}\\d+)\\]$') : outputMeta.key
 
     if (c.sourceOutput.match(bodyRegexp)) {
       const index = c.sourceOutput.match(bodyRegexp)![1]
@@ -243,7 +248,7 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
         nodes: mutableGraph.nodes(),
         connections: [
           ...mutableGraph.connections().filter(con => con.id !== c.id),
-          props.createConnection(mutableGraph.nodes().find(n => n.id === c.source)!, `${outputMeta.key}[${parseInt(index) - minIndex}]`, mutableGraph.nodes().find(n => n.id === c.target)!, 'bind')
+          props.createConnection(mutableGraph.nodes().find(n => n.id === c.source)!, outputMeta.array ? `${outputMeta.key}[${parseInt(index) - minIndex}]` : outputMeta.key, mutableGraph.nodes().find(n => n.id === c.target)!, 'bind')
         ]
       })
     }

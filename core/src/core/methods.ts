@@ -334,6 +334,7 @@ import { structures } from 'rete-structures'
 export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase>(props: {
   isStart: (node: S['Node']) => boolean
   isSequence: (node: S['Node']) => false | RegExp | string
+  getBlockParameterName(node: S['Node'], context: any): { array: boolean, key: string },
   isBranch: (node: S['Node']) => false | RegExp | string
 }) {
   return async (context: Context<ASTNode, S>) => {
@@ -349,6 +350,7 @@ export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase
     }, {
       isStartNode: props.isStart,
       isBlock: n => props.isSequence(n),
+      getBlockParameterName: n => props.getBlockParameterName(n, context),
       createConnection: context.createConnection
     })
 
