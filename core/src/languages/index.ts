@@ -80,7 +80,7 @@ export function createAdapter(language: Language<any, any, any>): LanguageAdapte
         return Array.from(code.getTransformers().map(t => t.name))
       },
     async _applySnapshot(direction, name) {
-      const editor = code.snapshots.get(direction + ' ' + name)
+      const editor = code.snapshots[direction].get(name)
 
       if (!editor) throw new Error('Snapshot not found')
       return serialize(editor)

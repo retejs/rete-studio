@@ -31,7 +31,10 @@ export type Options<ASTNode extends ASTNodeBase, S extends ClassicSchemes> = {
 
 export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeBase> extends Scope<never, [Root<Schemes>]> {
     editor!: NodeEditor<Schemes>
-    snapshots = new Map<string, NodeEditor<Schemes>>()
+    snapshots = {
+        up: new Map<string, NodeEditor<Schemes>>(),
+        down: new Map<string, NodeEditor<Schemes>>()
+    }
 
     constructor(private options: Options<ASTNode, Schemes>) {
         super('code')
@@ -156,6 +159,7 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         const { transformers } = this.options
         const tempEditor = new NodeEditor<Schemes>()
 
+        this.snapshots.up.clear()
         // console.time('processNode')
         await this.astNodeIntoEditor(ast, {
             ...this.options.up,
@@ -170,7 +174,7 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
                 await transformer.up({ ...this.options.up, editor: tempEditor })
                 const snapshot = new NodeEditor<Schemes>()
                 await this.copy(tempEditor, snapshot)
-                this.snapshots.set('up '+transformer.name, snapshot)
+                this.snapshots.up.set(transformer.name, snapshot)
                 console.log('End up:', transformer.name);
             } catch (e) {
                 await this.copy(tempEditor, this.editor)
@@ -213,13 +217,14 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         const tempEditor = new NodeEditor<Schemes>()
         const transformers = [...this.options.transformers].reverse()
 
+        this.snapshots.down.clear()
         await this.copy(this.editor, tempEditor)
 
         for (const transformer of transformers) {
             console.log('Start down:', transformer.name);
             await transformer.down({ ...this.options.down, editor: tempEditor })
             const snapshot = new NodeEditor<Schemes>()
-            this.snapshots.set('down '+transformer.name, snapshot)
+            this.snapshots.down.set(transformer.name, snapshot)
             await this.copy(tempEditor, snapshot)
             console.log('End down:', transformer.name, tempEditor.getConnections().length, tempEditor.getNodes().length);
         }

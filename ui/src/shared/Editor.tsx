@@ -8,6 +8,7 @@ import styled from 'styled-components'
 import { delay } from '../delay';
 import { createEditor } from '../editor'
 import { Theme } from '../theme';
+import { Debug } from './Debug';
 
 const SaveButton = styled(Button)`
   position: absolute !important;
@@ -28,59 +29,6 @@ const DebugButton = styled(Button)`
   z-index: 1;
 `
 
-const Debug = styled.div`
-  position: absolute;
-  bottom: 0;
-  left: 3em;
-  z-index: 1;
-  width: calc(100% - 6em);
-  button {
-    font-family: Monserrat, sans-serif;
-    margin: 0 0.2em;
-    background: rgba(150, 150, 150, 0.5);
-    border-radius: 1em;
-    border: none;
-    color: white;
-    font-size: 0.8em;
-    &:hover {
-      background: rgba(150, 150, 150, 0.7);
-    }
-  }
-  .list {
-    white-space: nowrap;
-    max-width: 100%;
-    overflow: auto;
-  }
-
-  .list::-webkit-scrollbar {
-    width: 5px;
-    height: 6px;
-    background: rgba(0, 0, 0, 0.1);
-  }
-  .list::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-  }
-`
-
-const DebugSection = styled('div')`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 0.5em 0;
-`
-
-const DebugTitle = styled('h3')`
-  font-size: 0.7em;
-  color: white;
-  text-align: center;
-  margin: 0.3em 0;
-  text-orientation: sideways;
-  writing-mode: vertical-rl;
-  position: sticky;
-  left: 0;
-  top: 0;
-`
 
 function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () => unknown | Promise<unknown> }) {
   const [loading, setLoading] = useState(false)
@@ -105,6 +53,7 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
   }
 }
 
+// eslint-disable-next-line max-statements
 export function useEditor(props: { lang: LanguageAdapter, code: string | undefined, autoCode?: boolean }) {
   const [snippets, setSnippets] = useState<LanguageSnippet[]>([])
   const create = useCallback((container: HTMLElement) => {
@@ -172,20 +121,12 @@ export function useEditor(props: { lang: LanguageAdapter, code: string | undefin
     executableCode,
     canvas: (
       <Theme>
-        {isDebug && transformerNames && <Debug>
-          <DebugSection>
-            <DebugTitle>up</DebugTitle>
-            <div className='list'>
-              {transformerNames.map(name => <button key={name} onClick={() => editor?.debug.graphFromSnapshot('up', name)}>{name}</button>)}
-            </div>
-          </DebugSection>
-          <DebugSection>
-            <DebugTitle>down</DebugTitle>
-            <div className='list'>
-              {transformerNames.map(name => <button key={name} onClick={() => editor?.debug.graphFromSnapshot('down', name)}>{name}</button>)}
-            </div>
-          </DebugSection>
-        </Debug>}
+        {isDebug && transformerNames && (
+          <Debug
+            transformerNames={transformerNames}
+            loadSnapshot={(direction, name) => editor?.debug.graphFromSnapshot(direction, name)
+            } />
+        )}
         <Tooltip placement="top" title="Debug mode">
           <DebugButton onClick={() => setDebug(!isDebug)} icon={<BugOutlined />} />
         </Tooltip>
