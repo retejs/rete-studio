@@ -266,17 +266,36 @@ const assets = [
 `, `
   flowchart LR
 
-  VariableDeclaration1 -->|declarations[0]| VariableDeclarator
+  VariableDeclaration1 -->|bind| VariableDeclarator
   IfStatement1 -->|consequent| Statement1
   VariableDeclarator -->|bind| IfStatement1
   Program -->|bind| VariableDeclaration1
+`],
+['try-catch', `
+flowchart LR
+
+Program -->|body[0]| TryStatement
+TryStatement -->|block| Block1
+Block1 -->|body[0]| Statement1
+TryStatement -->|handler| CatchClause1
+CatchClause1 -->|block| Block2
+Block2 -->|body[0]| Statement2
+`, `
+flowchart LR
+
+Program -->|bind| TryStatement
+TryStatement -->|block| Block1
+TryStatement -->|handler| CatchClause1
+CatchClause1 -->|bind| Block2
+Block1 -->|bind| Statement1
+Block2 -->|bind| Statement2
 `]
 ]
 
 const props = {
   isStartNode: (source: N) => Boolean(source.id.match(/^(Program)/)),
-  isBlock: (source: N) => source.id.match(/^(Block|Program|VariableDeclaration)/) ? /^body\[\d+\]$/ : false,
-  isBranchNode: (node: N) => Boolean(node.id.match(/^(If)/)),
+  isBlock: (source: N) => source.id.match(/^(Block|Program|VariableDeclaration|CatchClause)/) ? /^body\[\d+\]$/ : false,
+  isBranchNode: (node: N) => Boolean(node.id.match(/^(If|TryStatement)/)),
   isRoot: (node: N) => Boolean(node.id.match(/^(Program)/)),
   isCompatible: (source: N, target: N) => {
     // TODO refactor
@@ -287,7 +306,7 @@ const props = {
   getBlockParameterName(node: N) {
     if (node.id.startsWith('Program')) return { array: true, key: 'body' }
     if (node.id.startsWith('VariableDeclaration')) return { array: true, key: 'declarations' }
-    if (node.id.startsWith('CatchClause')) return { array: false, key: 'body' }
+    if (node.id.startsWith('CatchClause')) return { array: false, key: 'block' }
     if (node.id.startsWith('ObjectPattern')) return { array: true, key: 'properties' }
     return { array: true, key: 'body' }
   },
