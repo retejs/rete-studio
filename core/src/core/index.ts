@@ -1,3 +1,4 @@
+/* eslint-disable max-statements */
 import { NodeEditor, Root, Scope } from 'rete'
 import { structures } from 'rete-structures'
 
@@ -30,6 +31,10 @@ export type Options<ASTNode extends ASTNodeBase, S extends ClassicSchemes> = {
 
 export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeBase> extends Scope<never, [Root<Schemes>]> {
     editor!: NodeEditor<Schemes>
+    snapshots = {
+        up: new Map<string, NodeEditor<Schemes>>(),
+        down: new Map<string, NodeEditor<Schemes>>()
+    }
 
     constructor(private options: Options<ASTNode, Schemes>) {
         super('code')
@@ -154,6 +159,7 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         const { transformers } = this.options
         const tempEditor = new NodeEditor<Schemes>()
 
+        this.snapshots.up.clear()
         // console.time('processNode')
         await this.astNodeIntoEditor(ast, {
             ...this.options.up,
@@ -164,9 +170,12 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         // console.time('simplify')
         for (const transformer of transformers) {
             try {
-                // console.log('Start up:', transformer.name);
+                console.log('Start up:', transformer.name);
                 await transformer.up({ ...this.options.up, editor: tempEditor })
-                // console.log('End up:', transformer.name);
+                const snapshot = new NodeEditor<Schemes>()
+                await this.copy(tempEditor, snapshot)
+                this.snapshots.up.set(transformer.name, snapshot)
+                console.log('End up:', transformer.name);
             } catch (e) {
                 await this.copy(tempEditor, this.editor)
                 throw e
@@ -208,12 +217,16 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         const tempEditor = new NodeEditor<Schemes>()
         const transformers = [...this.options.transformers].reverse()
 
+        this.snapshots.down.clear()
         await this.copy(this.editor, tempEditor)
 
         for (const transformer of transformers) {
-            // console.log('Start down:', transformer.name);
+            console.log('Start down:', transformer.name);
             await transformer.down({ ...this.options.down, editor: tempEditor })
-            // console.log('End down:', transformer.name);
+            const snapshot = new NodeEditor<Schemes>()
+            this.snapshots.down.set(transformer.name, snapshot)
+            await this.copy(tempEditor, snapshot)
+            console.log('End down:', transformer.name, tempEditor.getConnections().length, tempEditor.getNodes().length);
         }
 
         const roots = structures(tempEditor).roots().nodes()
@@ -223,7 +236,15 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
 
         const root = roots[0]
 
-        return this.nodeIntoAST<R>(root, { ...this.options.down, editor: tempEditor })
+        try {
+            const ast = this.nodeIntoAST<R>(root, { ...this.options.down, editor: tempEditor })
+
+            console.log('toAST', ast)
+            return ast
+        } catch (e) {
+            console.error('toAST: ', e)
+            throw e
+        }
     }
 
     private async copy(from: NodeEditor<Schemes>, to: NodeEditor<Schemes>) {

@@ -1,28 +1,45 @@
-import { NodeEditor } from 'rete'
+/* eslint-disable max-statements */
 import { createRoot } from 'react-dom/client'
-import { AreaPlugin, AreaExtensions } from 'rete-area-plugin'
-import { ConnectionPlugin, ClassicFlow, getSourceTarget } from 'rete-connection-plugin'
-import { ReactArea2D, ReactPlugin, Presets as ReactPresets } from 'rete-react-plugin'
-import { ContextMenuPlugin, ContextMenuExtra } from 'rete-context-menu-plugin'
-import { ScopesPlugin, Presets as ScopePresets } from 'rete-scopes-plugin'
-import { Schemes, LanguageAdapter, ControlSocket, InputControl, InsertControl, RefSocket, SelectControl, LanguageSnippet, serialize, Connection } from 'rete-studio-core'
-import { areConnected, debugNodes } from './utils'
-import { structures } from 'rete-structures'
-import { useInnerPorts } from './inner-ports'
-import { addCustomBackground } from './custom-background'
-import { getDOMSocketPosition } from 'rete-render-utils'
-import { Drag as AreaDrag } from 'rete-area-plugin';
+import { NodeEditor } from 'rete'
+import { AreaExtensions, AreaPlugin, Drag as AreaDrag } from 'rete-area-plugin'
+import { ClassicFlow, ConnectionPlugin, getSourceTarget } from 'rete-connection-plugin'
+import { ContextMenuExtra, ContextMenuPlugin } from 'rete-context-menu-plugin'
 import { HistoryExtensions, HistoryPlugin, Presets as HistoryPresets } from 'rete-history-plugin'
+import { Presets as ReactPresets, ReactArea2D, ReactPlugin } from 'rete-react-plugin'
+import { getDOMSocketPosition } from 'rete-render-utils'
+import { Presets as ScopePresets, ScopesPlugin } from 'rete-scopes-plugin'
+import { structures } from 'rete-structures'
+import {
+  applyInteraction, Connection, ControlSocket, deserialize,
+  InputControl, InsertControl,
+  LanguageAdapter, LanguageSnippet, RefSocket, Schemes, SelectControl,
+  serialize
+} from 'rete-studio-core'
+
 import { items as contextMenuItems } from './context-menu'
-import * as UI from './ui'
+import { addCustomBackground } from './custom-background'
+import { useInnerPorts } from './inner-ports'
 import { createArrangePlugin, innerPortWidth, layout, padding } from './layout'
-import { deserialize, applyInteraction } from 'rete-studio-core'
+import * as UI from './ui'
+import { areConnected, debugNodes } from './utils'
 
 export type AreaExtra = ReactArea2D<Schemes> | ContextMenuExtra
 
-
 async function graphFromCode(code: string, language: LanguageAdapter, editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>) {
   const data = await language.codeToGraph(code)
+
+  if (!data) throw new Error('Failed to parse code')
+
+  await editor.clear()
+  await deserialize(editor, data)
+
+  applyInteraction(editor, id => area.update('node', id))
+}
+
+async function graphFromSnapshot(direction: 'up' | 'down', id: string, language: LanguageAdapter, editor: NodeEditor<Schemes>, area: AreaPlugin<Schemes, AreaExtra>) {
+  const data = await language._applySnapshot(direction, id)
+
+  if (!data) throw new Error('Failed to parse code')
 
   await editor.clear()
   await deserialize(editor, data)
@@ -83,7 +100,6 @@ export async function createEditor(container: HTMLElement, snippets: LanguageSni
       }
     }
   }))
-
 
   area.area.setDragHandler(new AreaDrag({
     down: e => {
@@ -198,7 +214,6 @@ export async function createEditor(container: HTMLElement, snippets: LanguageSni
   })
   // AreaExtensions.snapGrid(area, { size: 20, dynamic: true })
 
-
   area.use(contextMenu)
   area.use(reactPlugin)
   area.use(connection)
@@ -249,6 +264,16 @@ export async function createEditor(container: HTMLElement, snippets: LanguageSni
       const code = await language.graphToCode(data)
 
       return code
+    },
+    debug: {
+      async graphFromSnapshot(direction: 'up' | 'down', id: string) {
+        console.log({ direction, id })
+        await graphFromSnapshot(direction, id, language, editor, area)
+        console.log('layout:', await layout(editor, area, arrange, innerPorts, true))
+      },
+      async getTransformerNames() {
+        return language._getTransformerNames()
+      }
     },
     async codeToExecutable(code: string) {
       return language.codeToExecutable(code)

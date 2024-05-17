@@ -37,6 +37,8 @@ export interface LanguageAdapter {
   codeToExecutable(code: string): Promise<string>;
   graphToCode(data: JSONEditorData): Promise<string>;
   codeToGraph(code: string): Promise<JSONEditorData>;
+  _getTransformerNames(): Promise<string[]>;
+  _applySnapshot(direction: 'down' | 'up', id: string): Promise<JSONEditorData>;
 }
 
 export function createAdapter(language: Language<any, any, any>): LanguageAdapter {
@@ -73,7 +75,15 @@ export function createAdapter(language: Language<any, any, any>): LanguageAdapte
       await toGraph(ast)
 
       return serialize(workerEditor)
+    },
+    async _getTransformerNames() {
+        return Array.from(code.getTransformers().map(t => t.name))
+      },
+    async _applySnapshot(direction, name) {
+      const editor = code.snapshots[direction].get(name)
 
+      if (!editor) throw new Error('Snapshot not found')
+      return serialize(editor)
     }
   }
 }

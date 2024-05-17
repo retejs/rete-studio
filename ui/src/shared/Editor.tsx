@@ -1,13 +1,14 @@
-import React from 'react'
-import { useCallback, useEffect, useState } from 'react';
-import { CodeFilled, LayoutFilled } from '@ant-design/icons'
+import { BugOutlined, CodeFilled, LayoutFilled } from '@ant-design/icons'
 import { Button, Tooltip } from 'antd'
-import styled from 'styled-components'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useRete } from 'rete-react-plugin';
-import { createEditor } from '../editor'
-import { delay } from '../delay';
 import { LanguageAdapter, LanguageSnippet } from 'rete-studio-core';
+import styled from 'styled-components'
+
+import { delay } from '../delay';
+import { createEditor } from '../editor'
 import { Theme } from '../theme';
+import { Debug } from './Debug';
 
 const SaveButton = styled(Button)`
   position: absolute !important;
@@ -21,6 +22,13 @@ const LayoutButton = styled(Button)`
   right: 1em;
   z-index: 1;
 `
+const DebugButton = styled(Button)`
+  position: absolute !important;
+  bottom: 1em;
+  left: 1em;
+  z-index: 1;
+`
+
 
 function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () => unknown | Promise<unknown> }) {
   const [loading, setLoading] = useState(false)
@@ -45,6 +53,7 @@ function useTask(props: { execute: () => unknown | Promise<unknown>, fail: () =>
   }
 }
 
+// eslint-disable-next-line max-statements
 export function useEditor(props: { lang: LanguageAdapter, code: string | undefined, autoCode?: boolean }) {
   const [snippets, setSnippets] = useState<LanguageSnippet[]>([])
   const create = useCallback((container: HTMLElement) => {
@@ -53,6 +62,7 @@ export function useEditor(props: { lang: LanguageAdapter, code: string | undefin
   const [ref, editor] = useRete(create)
   const [code, setCode] = useState<string | undefined>()
   const [executableCode, setExecutableCode] = useState<undefined | string>()
+  const [isDebug, setDebug] = useState(false)
 
   useEffect(() => {
     props.lang.getSnippets().then(setSnippets)
@@ -98,6 +108,12 @@ export function useEditor(props: { lang: LanguageAdapter, code: string | undefin
 
   }, [editor, props.code])
 
+  const [transformerNames, setTransformerNames] = useState<string[] | undefined>()
+
+  useEffect(() => {
+    if (editor) editor.debug.getTransformerNames().then(setTransformerNames)
+  }, [editor])
+
   return {
     codeToGraph,
     graphToCode,
@@ -105,6 +121,15 @@ export function useEditor(props: { lang: LanguageAdapter, code: string | undefin
     executableCode,
     canvas: (
       <Theme>
+        {isDebug && transformerNames && (
+          <Debug
+            transformerNames={transformerNames}
+            loadSnapshot={(direction, name) => editor?.debug.graphFromSnapshot(direction, name)
+            } />
+        )}
+        <Tooltip placement="top" title="Debug mode">
+          <DebugButton onClick={() => setDebug(!isDebug)} icon={<BugOutlined />} />
+        </Tooltip>
         <Tooltip placement="bottom" title="To code">
           <SaveButton onClick={graphToCode.execute} icon={<CodeFilled />} />
         </Tooltip>

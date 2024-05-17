@@ -1,15 +1,16 @@
 'use client'
+import { Editor } from '@monaco-editor/react';
 import { editor as monaco } from 'monaco-editor';
 import React, { useEffect, useState } from 'react';
+import { LanguageAdapter } from 'rete-studio-core';
 import styled from 'styled-components';
 import { useDebounce } from 'usehooks-ts'
-import { Area } from './shared/Area';
-import { Spin } from './shared/Spin'
-import { useEditor } from './shared/Editor';
+
 import { CodeError } from './shared/Alert';
+import { Area } from './shared/Area';
 import { CopyCode } from './shared/CopyCode';
-import { Editor } from '@monaco-editor/react';
-import { LanguageAdapter } from 'rete-studio-core';
+import { useEditor } from './shared/Editor';
+import { Spin } from './shared/Spin'
 import { Theme } from './theme';
 
 const Layout = styled.div`

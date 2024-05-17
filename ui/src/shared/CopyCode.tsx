@@ -12,7 +12,7 @@ const CopyButton = styled(Button)`
 `
 
 export function CopyCode(props: { value: string }) {
-  const [messageApi, contextHolder] = message.useMessage({ top: 60 });
+  const [messageApi, contextHolder] = message.useMessage({ top: 20 });
 
   return (
     // fix theme provider in the built library

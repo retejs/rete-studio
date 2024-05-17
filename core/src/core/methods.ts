@@ -1,3 +1,4 @@
+/* eslint-disable max-statements */
 import { ClassicPreset, NodeEditor, NodeId } from 'rete'
 
 import { Input, Output, Sockets } from '../nodes'
@@ -327,58 +328,44 @@ export function markClosures<S extends ClassicSchemes, ASTNode extends ASTNodeBa
   }
 }
 
+import { treeToFlow as treeToFlowOrigin } from './tree-flow';
+import { structures } from 'rete-structures'
+
 export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase>(props: {
   isStart: (node: S['Node']) => boolean
   isSequence: (node: S['Node']) => false | RegExp | string
+  getBlockParameterName(node: S['Node'], context: any): { array: boolean, key: string },
   isBranch: (node: S['Node']) => false | RegExp | string
 }) {
-  async function traverse(node: S['Node'], context: Context<ASTNode, S>): Promise<S['Node'][]> {
-    const { editor, createConnection } = context
-    const cons = editor.getConnections().filter(c => c.source === node.id && editor.getNode(c.target).type === 'statement')
-    const nodes = cons.map(c => editor.getNode(c.target))
-
-    const seq = props.isSequence(node)
-    if (seq) {
-      let prevLeaves = [node]
-
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i]
-        const c = cons[i]
-        if (!c.sourceOutput.match(seq)) continue
-        await editor.removeConnection(c.id)
-        for (const prevLeaf of prevLeaves) {
-          await editor.addConnection(createConnection(prevLeaf, BIND_KEY, n, BIND_KEY))
-        }
-        prevLeaves = await traverse(n, context)
-      }
-      return prevLeaves
-    } else {
-      const branch = props.isBranch(node)
-
-      if (branch) {
-        const leaves: any = []
-        for (let i = 0; i < cons.length; i++) {
-          const n = nodes[i]
-          const c = cons[i]
-          if (!c.sourceOutput.match(branch)) continue
-          leaves.push(...await traverse(n, context))
-        }
-        return leaves
-      }
-      if (nodes.length === 0) return [node]
-      if (nodes.length === 1) return traverse(nodes[0], context)
-
-      console.warn({ nodes, node })
-      throw new Error('1/ supposed to returns leaves for ' + node.id)
-    }
-  }
-
   return async (context: Context<ASTNode, S>) => {
-    const startNodes = context.editor.getNodes().filter(props.isStart)
+    const data = structures({
+      nodes: context.editor.getNodes(),
+      connections: context.editor.getConnections(),
+    }).filter(n => n.type === 'statement' || props.isStart(n))
 
-    for (const start of startNodes) {
-      await traverse(start, context)
+    const result = treeToFlowOrigin({
+      nodes: data.nodes(),
+      connections: data.connections(),
+      closures: {}
+    }, {
+      isStartNode: props.isStart,
+      isBlock: n => props.isSequence(n),
+      getBlockParameterName: n => props.getBlockParameterName(n, context),
+      createConnection: context.createConnection
+    })
+
+    const connectionsToRemove = context.editor.getConnections().filter(c => !result.connections.find(r => r.id === c.id) && context.editor.getNode(c.target).type === 'statement')
+    const connectionsToAdd = result.connections.filter(r => !context.editor.getConnections().find(c => c.id === r.id))
+
+    console.log(result, { connectionsToRemove, connectionsToAdd })
+
+    for (const c of connectionsToRemove) {
+      await context.editor.removeConnection(c.id)
     }
+    for (const c of connectionsToAdd) {
+      await context.editor.addConnection(c)
+    }
+
   }
 }
 

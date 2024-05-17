@@ -2,6 +2,9 @@ export type OnlyMethods<T> = {
   [K in keyof T]-?: T[K] extends Function ? T[K] : never
 };
 
+type ReturnData = { return: any, id: number }
+type ErrorData = { error: string, id: number }
+
 export function requestable<T>(worker: Worker): OnlyMethods<T> {
   return new Proxy({} as OnlyMethods<T>, {
     get(_, name) {
@@ -25,19 +28,23 @@ export async function request(worker: Worker, method: string, ...args: any[]) {
   const id = Math.random()
 
   return new Promise((resolve, reject) => {
-    const listen = (event: MessageEvent<{ return: any[], id: number }>) => {
+    const listen = (event: MessageEvent<ReturnData | ErrorData>) => {
       if (event.data.id === id) {
         worker.removeEventListener('message', listen)
-
-        resolve(event.data.return)
+        if ('error' in event.data) {
+          reject(new Error(event.data.error))
+        } else {
+          resolve(event.data.return)
+        }
         clearTimeout(timer)
       }
     }
     // fail on timeout
     const timer = setTimeout(() => {
       worker.removeEventListener('message', listen)
+      worker.terminate()
       reject(new Error('timeout'))
-    }, 5000)
+    }, 150000)
     worker.postMessage({ args, method, id })
     worker.addEventListener('message', listen)
     worker.addEventListener('error', reject)
@@ -52,9 +59,10 @@ export async function listen(handler: (method: string, args: any[]) => Promise<a
     try {
       const result = await handler(method, args)
 
-      self.postMessage({ return: result, id })
+      self.postMessage(<ReturnData>{ return: result, id })
     } catch (error) {
-      self.postMessage({ error: (error as Error).message, id })
+      console.error('Worker', error)
+      self.postMessage(<ErrorData>{ error: (error as Error).message, id })
     }
   })
 }
