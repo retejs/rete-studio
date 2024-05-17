@@ -4,8 +4,7 @@
   "description": "",
   "scripts": {
     "build": "rete build -c rete.config.ts",
-    "lint": "rete lint",
-    "test": "rete test"
+    "lint": "rete lint"
   },
   "author": "Vitaliy Stoliarov",
   "license": "CC-BY-NC-SA-4.0",
@@ -24,7 +23,6 @@
   "devDependencies": {
     "@types/babel__generator": "^7.6.4",
     "@types/babel__traverse": "^7.20.1",
-    "mermaid": "^10.9.0",
     "rete": "^2.0.2",
     "rete-area-plugin": "^2.0.0",
     "rete-cli": "^1.0.1",
