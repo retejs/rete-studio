@@ -328,7 +328,7 @@ export function markClosures<S extends ClassicSchemes, ASTNode extends ASTNodeBa
   }
 }
 
-import { treeToFlow as treeToFlowOrigin } from '../transformers'
+import { treeToFlow as treeToFlowOrigin } from './tree-flow';
 import { structures } from 'rete-structures'
 
 export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase>(props: {

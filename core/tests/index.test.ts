@@ -3,10 +3,10 @@
 // eslint-disable-next-line no-undef
 globalThis.crypto = require('crypto')
 import { describe, expect, it } from '@jest/globals'
-
-import { flowToTree, treeToFlow } from '../src/transformers'
-import { N, comparable, getData, sanitize, stringifyChart } from '../src/utils2'
 import { getUID } from 'rete'
+
+import { flowToTree, treeToFlow } from '../src/core/tree-flow'
+import { comparable, getData, N, sanitize, stringifyChart } from '../src/core/tree-flow/utils';
 
 const numberOfIfs = 25
 

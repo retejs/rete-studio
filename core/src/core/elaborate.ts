@@ -1,6 +1,7 @@
 import { NodeEditor } from 'rete'
 import { structures } from 'rete-structures'
 
+import { flowToTree as flowToTreeOrigin } from '../core/tree-flow'
 import { ClassicSchemes } from '../types'
 import { ASTNodeBase, BIND_KEY, ToASTContext } from './types'
 
@@ -76,9 +77,6 @@ export function getBranchExit<S extends ClassicSchemes, ASTNode extends ASTNodeB
 
   return roots[0] || null
 }
-
-import { flowToTree as flowToTreeOrigin } from '../transformers'
-// import { structures } from 'rete-structures'
 
 export function flowToTree<S extends ClassicSchemes, ASTNode extends ASTNodeBase>(options: {
   isRoot(node: S['Node'], context: ToASTContext<ASTNode, S>): boolean

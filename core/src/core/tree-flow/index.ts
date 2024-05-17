@@ -1,7 +1,7 @@
 /* eslint-disable max-statements */
 import { structures } from 'rete-structures'
 
-import { C, Closures, Marker, N } from './utils2'
+import { C, Closures, Marker, N } from './utils'
 
 export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[], connections: Con[], closures: Closures }, props: {
  isBlock: (node: Node) => false | RegExp | string
