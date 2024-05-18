@@ -1,5 +1,5 @@
 import { createAdapter } from 'rete-studio-core'
 import * as JavaScript from 'rete-studio-javascript-lang'
-import { responsable } from '../lib/req-res'
+import { responsable } from 'worker-bridge'
 
 responsable(createAdapter(JavaScript))
