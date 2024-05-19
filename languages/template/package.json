@@ -13,8 +13,8 @@
     "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
   },
   "devDependencies": {
-    "rete": "^2.0.2",
-    "rete-cli": "^1.0.1",
+    "rete": "^2.0.3",
+    "rete-cli": "^1.0.3",
     "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
   }
 }

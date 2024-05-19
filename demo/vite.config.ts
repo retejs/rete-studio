@@ -5,7 +5,8 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    'process.env.JS_EXAMPLES': JSON.stringify('[]')
+    'process.env.JS_EXAMPLES': JSON.stringify('[]'),
+    'process.version': '""'
   },
   // resolve: {
   //   alias: [

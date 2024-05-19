@@ -23,10 +23,10 @@
   "devDependencies": {
     "@types/babel__generator": "^7.6.4",
     "@types/babel__traverse": "^7.20.1",
-    "rete": "^2.0.2",
-    "rete-area-plugin": "^2.0.0",
-    "rete-cli": "^1.0.1",
-    "rete-structures": "^2.0.0",
+    "rete": "^2.0.3",
+    "rete-area-plugin": "^2.0.4",
+    "rete-cli": "^1.0.3",
+    "rete-structures": "^2.0.1",
     "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
   }
 }
