@@ -113,7 +113,13 @@ export function flowToTree<S extends ClassicSchemes, ASTNode extends ASTNodeBase
 
       const connectionsToRemove = context.editor
         .getConnections()
-        .filter(c => !result.connections.find(r => r.id === c.id) && context.editor.getNode(c.target).type === 'statement')
+        .filter(c => {
+          const exists = result.connections.find(r => r.id === c.id)
+          const isTargetStatement = context.editor.getNode(c.target).type === 'statement'
+          const isSourceStatement = context.editor.getNode(c.source).type === 'statement'
+
+          return !exists && isTargetStatement && isSourceStatement
+        })
       const connectionsToAdd = result.connections.filter(r => !context.editor.getConnections().find(c => c.id === r.id))
 
       console.log('RESULT', result, { connectionsToRemove, connectionsToAdd })

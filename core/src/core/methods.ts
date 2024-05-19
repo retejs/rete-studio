@@ -330,6 +330,11 @@ export function markClosures<S extends ClassicSchemes, ASTNode extends ASTNodeBa
 
 import { treeToFlow as treeToFlowOrigin } from './tree-flow';
 import { structures } from 'rete-structures'
+import { Closures, stringifyChart } from './tree-flow/utils'
+
+function debugNodeId(node: { id: string, label: string }) {
+  return [node.label, node.id].join('_')
+}
 
 export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase>(props: {
   isStart: (node: S['Node']) => boolean
@@ -338,31 +343,71 @@ export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase
   isBranch: (node: S['Node']) => false | RegExp | string
 }) {
   return async (context: Context<ASTNode, S>) => {
-    const data = structures({
-      nodes: context.editor.getNodes(),
-      connections: context.editor.getConnections(),
-    }).filter(n => n.type === 'statement' || props.isStart(n))
+    const startParents = context.editor.getNodes().filter(props.isStart).map(n => n.parent)
 
-    const result = treeToFlowOrigin({
-      nodes: data.nodes(),
-      connections: data.connections(),
-      closures: {}
-    }, {
-      isStartNode: props.isStart,
-      isBlock: n => props.isSequence(n),
-      getBlockParameterName: n => props.getBlockParameterName(n, context),
-      createConnection: context.createConnection
-    })
+    function collectRootDescendants(parent: S['Node']['parent']): S['Node'][] {
+      const match = context.editor.getNodes().filter(n => n.parent === parent && !startParents.includes(n.id))
 
-    const connectionsToRemove = context.editor.getConnections().filter(c => !result.connections.find(r => r.id === c.id) && context.editor.getNode(c.target).type === 'statement')
-    const connectionsToAdd = result.connections.filter(r => !context.editor.getConnections().find(c => c.id === r.id))
+      return [
+        ...match,
+        ...match.filter(n => n.label === 'Closure').flatMap(n => collectRootDescendants(n.id))
+      ]
+    }
 
-    console.log(result, { connectionsToRemove, connectionsToAdd })
+    const groups = context.editor.getNodes().filter(props.isStart).map(n => ({ start: n, nodes: collectRootDescendants(n.parent) }))
+    const collectedConnections: { remove: S['Connection'][], add: S['Connection'][] } = { remove: [], add: [] }
 
-    for (const c of connectionsToRemove) {
+    for (const { start, nodes } of groups) {
+      const data = structures({
+        nodes,
+        connections: context.editor.getConnections(),
+      }).filter(n => n.type === 'statement' || props.isStart(n))
+
+      const result = treeToFlowOrigin({
+        nodes: data.nodes(),
+        connections: data.connections(),
+        closures: context.editor.getNodes().filter(n => n.label === 'Closure').map(n => {
+          const children = context.editor.getNodes().filter(c => c.parent === n.id)
+
+          return [n.id, children.map(c => c.id)] as const
+        }).reduce((obj, [id, children]) => children.length ? { ...obj, [id]: new Set(children) } : obj, {} as Closures)
+      }, {
+        isStartNode: props.isStart,
+        isBlock: n => props.isSequence(n),
+        getBlockParameterName: n => props.getBlockParameterName(n, context),
+        createConnection: context.createConnection
+      })
+
+      const connectionsToRemove = data
+        .connections()
+        .filter(c => {
+          const exists = result.connections.find(r => r.id === c.id)
+          const isTargetStatement = context.editor.getNode(c.target).type === 'statement'
+
+          return !exists && isTargetStatement
+        })
+      const connectionsToAdd = result.connections.filter(r => !data.connections().find(c => c.id === r.id))
+
+      collectedConnections.remove.push(...connectionsToRemove)
+      collectedConnections.add.push(...connectionsToAdd)
+
+      console.log(`${start.label}[${start.id}]\n`, stringifyChart(result.connections.map(c => {
+        return {
+          ...c,
+          source: debugNodeId(context.editor.getNode(c.source)),
+          target: debugNodeId(context.editor.getNode(c.target)),
+        }
+      }), Object.fromEntries(Object.entries(result.closures).map(([id, c]) => {
+          return [debugNodeId(context.editor.getNode(id)), new Set(Array.from(c).filter(id => result.nodes.find(n => n.id === id) || result.closures[id]).map(id => {
+            return debugNodeId(context.editor.getNode(id))
+          }))]
+      }))))
+    }
+
+    for (const c of Array.from(new Set(collectedConnections.remove))) {
       await context.editor.removeConnection(c.id)
     }
-    for (const c of connectionsToAdd) {
+    for (const c of Array.from(new Set(collectedConnections.add))) {
       await context.editor.addConnection(c)
     }
 
@@ -378,7 +423,7 @@ export function removeRedunantNodes<S extends ClassicSchemes, ASTNode extends AS
           const inputs = editor.getConnections().filter(c => c.target === node.id)
           const outputs = editor.getConnections().filter(c => c.source === node.id)
 
-          if (outputs.length > 1) throw new Error('outputs')
+          if (outputs.length > 1) throw new Error('Multiple outputs are not allowed')
 
           if (outputs[0]) {
             for (const input of inputs) {

@@ -3,6 +3,30 @@ import { structures } from 'rete-structures'
 
 import { C, Closures, Marker, N } from './utils'
 
+function getNodesParents(scopesNodes: Closures) {
+  const nestedNodes: Record<string, string[]> = {}
+
+  function processScope(scopeId: string, nodeIds?: Set<string>) {
+    (nodeIds || []).forEach(id => {
+      if (!scopesNodes[id]) {
+        nestedNodes[id] = [scopeId, ...(nestedNodes[id] || [])]
+      } else {
+        processScope(scopeId, scopesNodes[id])
+      }
+    })
+  }
+
+  for (const scopeId in scopesNodes) {
+    processScope(scopeId, scopesNodes[scopeId])
+  }
+
+  return nestedNodes
+}
+
+function areClosuresCompatible(nodeParents: Record<string, string[]>, source: string, target: string) {
+  return (nodeParents[source] || []).length <= (nodeParents[target] || []).length
+}
+
 export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[], connections: Con[], closures: Closures }, props: {
  isBlock: (node: Node) => false | RegExp | string
  isStartNode: (node: Node) => boolean
@@ -15,6 +39,7 @@ export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[],
     connections: [...data.connections]
   })
   const roots = graph.nodes().filter(props.isStartNode)
+  const nodeParents = getNodesParents(data.closures)
 
   const markers: Record<string, Marker[]> = {}
 
@@ -54,7 +79,7 @@ export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[],
       const reconnect = entries.find(([, list]) => list.find(m => m.context.source === next && m.index === marker.index + 1))
       const nextContext = reconnect?.[1]?.[reconnect?.[1].length - 1].context
 
-      if (nextContext) {
+      if (nextContext && areClosuresCompatible(nodeParents, leaf.id, nextContext.target)) {
         mutableGraph = structures({
           nodes: mutableGraph.nodes(),
           connections: [
@@ -90,7 +115,8 @@ export function treeToFlow<Node extends N, Con extends C>(data: { nodes: Node[],
   console.timeEnd('treeToFlow')
   return {
     nodes: mutableGraph.nodes(),
-    connections: mutableGraph.connections()
+    connections: mutableGraph.connections(),
+    closures: data.closures
   }
 }
 
@@ -109,27 +135,6 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
     nodes,
     connections
   })
-
-  function getNodesParents(scopesNodes: Closures) {
-    const nestedNodes: Record<string, string[]> = {}
-
-    // Helper function to recursively process nested scopes
-    function processScope(scopeId: string, nodeIds?: Set<string>) {
-      (nodeIds || []).forEach(id => {
-        if (!scopesNodes[id]) {
-          nestedNodes[id] = [scopeId, ...(nestedNodes[id] || [])]
-        } else {
-          processScope(scopeId, scopesNodes[id])
-        }
-      })
-    }
-
-    for (const scopeId in scopesNodes) {
-      processScope(scopeId, scopesNodes[scopeId])
-    }
-
-    return nestedNodes
-  }
 
   const nodeParents = getNodesParents(data.closures)
 
@@ -178,7 +183,7 @@ export function flowToTree<Node extends N, Con extends C>(data: { nodes: Node[],
 
       // TODO subtract scopes
       const sameScope = (visited.get(inc.source) || []).length <= (visited.get(startNode.id) || []).length
-        && (nodeParents[inc.source] || []).length <= (nodeParents[startNode.id] || []).length
+        && areClosuresCompatible(nodeParents, inc.source, startNode.id)
 
       if (isStart && props.isBranchNode(source)) {
         continue
