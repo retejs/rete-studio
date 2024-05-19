@@ -170,12 +170,10 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         // console.time('simplify')
         for (const transformer of transformers) {
             try {
-                console.log('Start up:', transformer.name);
                 await transformer.up({ ...this.options.up, editor: tempEditor })
                 const snapshot = new NodeEditor<Schemes>()
                 await this.copy(tempEditor, snapshot)
                 this.snapshots.up.set(transformer.name, snapshot)
-                console.log('End up:', transformer.name);
             } catch (e) {
                 await this.copy(tempEditor, this.editor)
                 throw e
@@ -221,12 +219,10 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
         await this.copy(this.editor, tempEditor)
 
         for (const transformer of transformers) {
-            console.log('Start down:', transformer.name);
             await transformer.down({ ...this.options.down, editor: tempEditor })
             const snapshot = new NodeEditor<Schemes>()
             this.snapshots.down.set(transformer.name, snapshot)
             await this.copy(tempEditor, snapshot)
-            console.log('End down:', transformer.name, tempEditor.getConnections().length, tempEditor.getNodes().length);
         }
 
         const roots = structures(tempEditor).roots().nodes()
