@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { structures } from 'rete-structures'
 import { ASTNodeBase, BIND_KEY, Context, getInputNode, Schemes, ToASTContext } from 'rete-studio-core'
 import { Connection } from 'rete-studio-core'

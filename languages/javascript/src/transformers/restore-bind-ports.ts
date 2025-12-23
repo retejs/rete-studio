@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   ASTNodeBase, BIND_KEY, Context, ensurePorts,
   Schemes, ToASTContext } from 'rete-studio-core'

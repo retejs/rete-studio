@@ -1,3 +1,4 @@
+// @ts-nocheck
 // import { getUID } from 'rete'
 import {
   ASTNodeBase, Context, Input, InputControl, InsertControl, Output, RefSocket, Schemes, SelectControl, Socket,

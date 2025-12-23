@@ -33,6 +33,7 @@
     "rete-scopes-plugin": "^2.0.1",
     "rete-structures": "^2.0.1",
     "rete-studio-core": "file:../core/rete-studio-core-0.0.0.tgz",
+    "rete-studio-dsl-lang": "file:../languages/dsl/rete-studio-dsl-lang-0.0.0.tgz",
     "rete-studio-javascript-lang": "file:../languages/javascript/rete-studio-javascript-lang-0.0.0.tgz",
     "rete-studio-template-lang": "file:../languages/template/rete-studio-template-lang-0.0.0.tgz",
     "rete-studio-ui": "file:../ui/rete-studio-ui-0.0.0.tgz",

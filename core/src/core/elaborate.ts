@@ -7,14 +7,17 @@ import { ASTNodeBase, BIND_KEY, ToASTContext } from './types'
 
 export function belongToSameClosure<S extends ClassicSchemes>(source: S['Node'], target: S['Node'], { editor }: { editor: NodeEditor<S> }) {
   if (source.parent === target.parent) return true
-  if (target.parent && belongToSameClosure(source, editor.getNode(target.parent), { editor })) return true
+  const parentNode = target.parent ? editor.getNode(target.parent) : undefined
+  if (parentNode && belongToSameClosure(source, parentNode, { editor })) return true
   return false
 }
 
 export function getClosures<S extends ClassicSchemes>(node: S['Node'], context: { editor: NodeEditor<S> }): S['Node'][] {
   if (node.parent) {
     const closure = context.editor.getNode(node.parent)
-    return [closure, ...getClosures(closure, context)]
+    if (closure) {
+      return [closure, ...getClosures(closure, context)]
+    }
   }
   return []
 }
@@ -115,8 +118,10 @@ export function flowToTree<S extends ClassicSchemes, ASTNode extends ASTNodeBase
         .getConnections()
         .filter(c => {
           const exists = result.connections.find(r => r.id === c.id)
-          const isTargetStatement = context.editor.getNode(c.target).type === 'statement'
-          const isSourceStatement = context.editor.getNode(c.source).type === 'statement'
+          const targetNode = context.editor.getNode(c.target)
+          const sourceNode = context.editor.getNode(c.source)
+          const isTargetStatement = targetNode?.type === 'statement'
+          const isSourceStatement = sourceNode?.type === 'statement'
 
           return !exists && isTargetStatement && isSourceStatement
         })

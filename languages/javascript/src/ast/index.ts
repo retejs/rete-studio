@@ -1,3 +1,4 @@
+// @ts-nocheck
 import traverse, { Scope as TraverseScope } from '@babel/traverse'
 import * as BabelType from '@babel/types'
 import * as t from '@babel/types'

@@ -202,10 +202,16 @@ export class CodePlugin<Schemes extends ClassicSchemes, ASTNode extends ASTNodeB
                         const bIndex = parseInt(b.sourceOutput.match(/^.*\[(\d+)\]$/)![1])
                         return aIndex - bIndex
                     })
-                    .map(c => this.nodeIntoAST(context.editor.getNode(c.target), context))
+                    .map(c => {
+                        const targetNode = context.editor.getNode(c.target)
+                        if (!targetNode) throw new Error(`Node ${c.target} not found`)
+                        return this.nodeIntoAST(targetNode, context)
+                    })
             }
             if (connections.length > 1) throw new Error(`Multiple connections not allowed for ${key}`)
-            return this.nodeIntoAST(context.editor.getNode(connections[0].target), context)
+            const targetNode = context.editor.getNode(connections[0].target)
+            if (!targetNode) throw new Error(`Node ${connections[0].target} not found`)
+            return this.nodeIntoAST(targetNode, context)
         })
 
         return context.createASTNode(node, args)

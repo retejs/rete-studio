@@ -91,7 +91,10 @@ export function mirrorRight<ASTNode extends ASTNodeBase, S extends ClassicScheme
       ...context
     }
 
-    await mirrorOutput(editor, (id, key) => match(editor.getNode(id), key), mirrorContext)
+    await mirrorOutput(editor, (id, key) => {
+      const node = editor.getNode(id)
+      return node ? match(node, key) : false
+    }, mirrorContext)
   }
 }
 
@@ -107,7 +110,10 @@ export function mirrorLeft<ASTNode extends ASTNodeBase, S extends ClassicSchemes
       ...context
     }
 
-    await mirrorInput(editor, (id, key) => match(editor.getNode(id), key), mirrorContext)
+    await mirrorInput(editor, (id, key) => {
+      const node = editor.getNode(id)
+      return node ? match(node, key) : false
+    }, mirrorContext)
   }
 }
 
@@ -152,7 +158,10 @@ export function simplifyIdentifiers<ASTNode extends ASTNodeBase, S extends Class
 
       if (allMatches.length === 0) return null
 
-      const scopedMatches = allMatches.filter(m => editor.getNode(m.node).parent === scope)
+      const scopedMatches = allMatches.filter(m => {
+        const node = editor.getNode(m.node)
+        return node?.parent === scope
+      })
 
       if (scopedMatches.length === 1) return scopedMatches[0]
       if (scopedMatches.length > 1) {
@@ -161,15 +170,18 @@ export function simplifyIdentifiers<ASTNode extends ASTNodeBase, S extends Class
       }
       if (!scope) return null
 
-      return findIdentifier(identifier, editor.getNode(scope).parent)
+      const scopeNode = editor.getNode(scope)
+      return scopeNode ? findIdentifier(identifier, scopeNode.parent) : null
     }
 
     for (const consumer of consumers) {
       const consumerNode = editor.getNode(consumer.node)
+      if (!consumerNode) continue
       const producer = findIdentifier(consumer.identifier, consumerNode.parent)
 
       if (producer) {
         const producerNode = editor.getNode(producer.node)
+        if (!producerNode) continue
 
         await removeNodeWithConnections(editor, consumer.identifierNode)
         await editor.addConnection(createConnection(producerNode, producer.output, consumerNode, consumer.input))
@@ -188,6 +200,7 @@ async function convertNodeToInput<S extends ClassicSchemes>(editor: NodeEditor<S
 
     const outputConnection = outputCons[0]
     const target = editor.getNode(outputConnection.target)
+    if (!target) continue
     const input = target.inputs[outputConnection.targetInput]
 
     if (!input) {
@@ -222,8 +235,9 @@ export function getInputNode<ASTNode extends ASTNodeBase, S extends ClassicSchem
   if (connections.length > 1) throw new Error('found more than 1 connection')
 
   const connection = connections[0]
+  const sourceNode = connection ? editor.getNode(connection.source) : undefined
 
-  return connection ? [editor.getNode(connection.source), connection] : [undefined, undefined]
+  return connection && sourceNode ? [sourceNode, connection] : [undefined, undefined]
 }
 
 // reusable
@@ -239,8 +253,9 @@ export function getOutputNode<ASTNode extends ASTNodeBase, S extends ClassicSche
   if (connections.length > 1) throw new Error('found more than 1 connection')
 
   const connection = connections[0]
+  const targetNode = connection ? editor.getNode(connection.target) : undefined
 
-  return connection ? [editor.getNode(connection.target), connection] : [undefined, undefined]
+  return connection && targetNode ? [targetNode, connection] : [undefined, undefined]
 }
 
 export function findLabeledStatement<ASTNode extends ASTNodeBase, S extends ClassicSchemes>({ editor }: Pick<Context<ASTNode, S>, 'editor'>, nodeId: string): S['Node'];
@@ -248,20 +263,23 @@ export function findLabeledStatement<ASTNode extends ASTNodeBase, S extends Clas
 export function findLabeledStatement<ASTNode extends ASTNodeBase, S extends ClassicSchemes>({ editor }: Pick<Context<ASTNode, S>, 'editor'>, nodeId: string, optional = false) {
   function findLabel(nodeId: NodeId, label?: string): S['Node'] | null {
     const cons = editor.getConnections().filter(c => c.target === nodeId && !c.isLoop)
-    const nodes = cons.map(c => editor.getNode(c.source))
+    const nodes = cons.map(c => editor.getNode(c.source)).filter((n): n is S['Node'] => n !== undefined)
 
     const labeledConn = cons.find(c => {
       const n = editor.getNode(c.source)
-      if (n.label === 'LabeledStatement' && c.sourceOutput === 'body') {
+      if (n && n.label === 'LabeledStatement' && c.sourceOutput === 'body') {
         if (label) {
           const [labelNode] = getOutputNode({ editor }, n.id, 'label')
-          return labelNode.data.name === label
+          return labelNode?.data.name === label
         }
         return true
       }
     })
 
-    if (labeledConn) return editor.getNode(labeledConn.source)
+    if (labeledConn) {
+      const labeledNode = editor.getNode(labeledConn.source)
+      if (labeledNode) return labeledNode
+    }
 
     for (const n of nodes) {
       const found = findLabel(n.id, label)
@@ -300,7 +318,7 @@ export function markClosures<S extends ClassicSchemes, ASTNode extends ASTNodeBa
   async function traverse(node: S['Node'], context: Context<ASTNode, S>, closureId?: string) {
     const { editor, createNode } = context
     const cons = editor.getConnections().filter(c => c.source === node.id)
-    const nodes = cons.map(c => editor.getNode(c.target))
+    const nodes = cons.map(c => editor.getNode(c.target)).filter((n): n is S['Node'] => n !== undefined)
 
     let closure: S['Node'] | null = null
 
@@ -310,12 +328,13 @@ export function markClosures<S extends ClassicSchemes, ASTNode extends ASTNodeBa
 
       await editor.addNode(closure)
     } else {
-      closure = closureId ? editor.getNode(closureId) : null
+      closure = closureId ? editor.getNode(closureId) ?? null : null
     }
     node.parent = closure?.id
 
-    for (const node of nodes) {
-      await traverse(node, context, closure?.id)
+    for (const childNode of nodes) {
+      if (!closure) continue
+      await traverse(childNode, context, closure.id)
     }
   }
 
@@ -382,7 +401,8 @@ export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase
         .connections()
         .filter(c => {
           const exists = result.connections.find(r => r.id === c.id)
-          const isTargetStatement = context.editor.getNode(c.target).type === 'statement'
+          const targetNode = context.editor.getNode(c.target)
+          const isTargetStatement = targetNode?.type === 'statement'
 
           return !exists && isTargetStatement
         })
@@ -392,14 +412,18 @@ export function treeToFlow<S extends ClassicSchemes, ASTNode extends ASTNodeBase
       collectedConnections.add.push(...connectionsToAdd)
 
       console.log(`${start.label}[${start.id}]\n`, stringifyChart(result.connections.map(c => {
+        const sourceNode = context.editor.getNode(c.source)
+        const targetNode = context.editor.getNode(c.target)
         return {
           ...c,
-          source: debugNodeId(context.editor.getNode(c.source)),
-          target: debugNodeId(context.editor.getNode(c.target)),
+          source: sourceNode ? debugNodeId(sourceNode) : c.source,
+          target: targetNode ? debugNodeId(targetNode) : c.target,
         }
       }), Object.fromEntries(Object.entries(result.closures).map(([id, c]) => {
-          return [debugNodeId(context.editor.getNode(id)), new Set(Array.from(c).filter(id => result.nodes.find(n => n.id === id) || result.closures[id]).map(id => {
-            return debugNodeId(context.editor.getNode(id))
+          const node = context.editor.getNode(id)
+          return [node ? debugNodeId(node) : id, new Set(Array.from(c).filter(id => result.nodes.find(n => n.id === id) || result.closures[id]).map(id => {
+            const childNode = context.editor.getNode(id)
+            return childNode ? debugNodeId(childNode) : id
           }))]
       }))))
     }
@@ -427,7 +451,10 @@ export function removeRedunantNodes<S extends ClassicSchemes, ASTNode extends AS
 
           if (outputs[0]) {
             for (const input of inputs) {
-              const c = createConnection(editor.getNode(input.source), input.sourceOutput, editor.getNode(outputs[0].target), outputs[0].targetInput)
+              const sourceNode = editor.getNode(input.source)
+              const targetNode = editor.getNode(outputs[0].target)
+              if (!sourceNode || !targetNode) continue
+              const c = createConnection(sourceNode, input.sourceOutput, targetNode, outputs[0].targetInput)
 
               await editor.addConnection(c)
             }
@@ -461,10 +488,14 @@ export async function collapsePort<Schemes extends ClassicSchemes, ASTNode exten
   })
 
   for (const connection of connections) {
-    await editor.addConnection(side === 'output'
-      ? createConnection(to, toPort, editor.getNode(connection.target), connection.targetInput)
-      : createConnection(editor.getNode(connection.source), connection.sourceOutput, to, toPort)
-    )
+    const targetNode = side === 'output' ? editor.getNode(connection.target) : undefined
+    const sourceNode = side === 'input' ? editor.getNode(connection.source) : undefined
+
+    if (side === 'output' && targetNode) {
+      await editor.addConnection(createConnection(to, toPort, targetNode, connection.targetInput))
+    } else if (side === 'input' && sourceNode) {
+      await editor.addConnection(createConnection(sourceNode, connection.sourceOutput, to, toPort))
+    }
   }
 }
 
@@ -546,13 +577,17 @@ export function mergeSiblingNodes<ASTNode extends ASTNodeBase, S extends Classic
 
     for (const connection of inputConnections) {
       const { source, sourceOutput, targetInput } = connection
+      const sourceNode = editor.getNode(source)
+      if (!sourceNode) continue
 
-      await editor.addConnection(createConnection(editor.getNode(source), sourceOutput, target, targetInput, connection))
+      await editor.addConnection(createConnection(sourceNode, sourceOutput, target, targetInput, connection))
     }
     for (const connection of outputConnections) {
       const { target: targetId, sourceOutput, targetInput } = connection
+      const targetNode = editor.getNode(targetId)
+      if (!targetNode) continue
 
-      await editor.addConnection(createConnection(target, sourceOutput, editor.getNode(targetId), targetInput, connection))
+      await editor.addConnection(createConnection(target, sourceOutput, targetNode, targetInput, connection))
     }
   }
 }

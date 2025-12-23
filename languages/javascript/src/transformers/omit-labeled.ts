@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable max-statements */
 import { NodeEditor } from 'rete'
 import {

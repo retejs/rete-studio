@@ -66,7 +66,10 @@ export async function deserialize(editor: NodeEditor<Schemes>, data: JSONEditorD
   await importForParent(editor, data.nodes)
 
   for (const c of data.connections) {
-    const instance = Connection.deserialize(c, editor.getNode(c.source), editor.getNode(c.target))
+    const source = editor.getNode(c.source)
+    const target = editor.getNode(c.target)
+    if (!source || !target) continue
+    const instance = Connection.deserialize(c, source, target)
 
     await editor.addConnection(instance)
   }

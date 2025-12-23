@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "./node_modules/rete-cli/.eslintrc"
+  ],
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "ignorePatterns": ["src/generated/**"],
+  "rules": {
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/no-shadow": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "complexity": "off",
+    "no-console": "off",
+    "no-undefined": "off",
+    "init-declarations": "off",
+    "@typescript-eslint/no-non-null-assertion": "off"
+  }
+}

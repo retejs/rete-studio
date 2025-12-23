@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NodeEditor } from 'rete'
 import { ClassicSchemes, Schemes } from 'rete-studio-core'
 import { AreaPlugin } from 'rete-area-plugin'

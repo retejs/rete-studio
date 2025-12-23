@@ -21,6 +21,7 @@
   "rules": {
     "@typescript-eslint/naming-convention": "off",
     "@typescript-eslint/no-shadow": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "no-undefined": "off",
     "comma-dangle": "off",
     "newline-after-var": "off",

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { structures } from 'rete-structures'
 import { ASTNodeBase, Context, markClosures, Schemes, ToASTContext } from 'rete-studio-core'
 

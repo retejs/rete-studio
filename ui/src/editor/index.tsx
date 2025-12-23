@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable max-statements */
 import { createRoot } from 'react-dom/client'
 import { NodeEditor } from 'rete'

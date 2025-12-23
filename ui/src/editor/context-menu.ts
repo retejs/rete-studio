@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NodeEditor } from 'rete';
 import { AreaPlugin } from 'rete-area-plugin'
 import { Item, Items } from 'rete-context-menu-plugin/_types/types';

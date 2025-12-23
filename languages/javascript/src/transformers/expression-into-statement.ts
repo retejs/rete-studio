@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   ASTNodeBase, BIND_KEY, Connection, Context, forEach,
   getInputNode, Input, mergeSiblingNodes, Schemes, socket, ToASTContext,

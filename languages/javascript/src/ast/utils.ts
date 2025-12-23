@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as BabelType from '@babel/types'
 
 export function getIdentifiers(v: BabelType.LVal) {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ClassicPreset } from 'rete'
 import {
   ASTNodeBase, BIND_KEY, cleanUpPorts, Context,

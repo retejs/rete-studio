@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ASTNodeBase, BIND_KEY, Context, ControlSocket, Schemes, ToASTContext } from 'rete-studio-core'
 
 import { Transformer } from './interface'

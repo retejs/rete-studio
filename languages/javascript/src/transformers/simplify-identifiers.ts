@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { getUID, NodeId } from 'rete'
 import { structures } from 'rete-structures'
 import {

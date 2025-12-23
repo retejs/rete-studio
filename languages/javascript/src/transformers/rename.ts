@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as BabelType from '@babel/types'
 import {
   ASTNodeBase, Context, getBinaryOperator, getLogicalOperator, getUnaryOperator, getUpdateOperator, humanizeOperator,

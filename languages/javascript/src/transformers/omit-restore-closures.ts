@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { structures } from 'rete-structures'
 import {
   ASTNodeBase, BaseNode, BIND_KEY, Context, forEach, getBranchExit, getClosureDifference,

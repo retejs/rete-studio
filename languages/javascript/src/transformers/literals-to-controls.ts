@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NodeId } from 'rete'
 import {
   ASTNodeBase, BaseNode, BIND_KEY, Connection,

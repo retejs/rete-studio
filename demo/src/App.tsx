@@ -5,12 +5,14 @@ import { SwitchLang, useLang } from './Lang'
 import 'rete-studio-ui/styles.css'
 import { useEffect, useMemo, useState } from 'react'
 import JSWorker from './workers/javascript?worker'
+import DSLWorker from './workers/dsl?worker'
 import TemplateWorker from './workers/template?worker'
 import { OnlyMethods, requestable } from 'worker-bridge'
 import { LanguageAdapter } from 'rete-studio-core'
 
 const languages: Record<string, OnlyMethods<LanguageAdapter>> = {
   javascript: requestable<LanguageAdapter>(new JSWorker()),
+  dsl: requestable<LanguageAdapter>(new DSLWorker()),
   template: requestable<LanguageAdapter>(new TemplateWorker())
 }
 

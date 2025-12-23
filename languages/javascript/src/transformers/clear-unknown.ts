@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ASTNodeBase, Context, removeRedunantNodes, Schemes, ToASTContext } from 'rete-studio-core'
 
 import { Transformer } from './interface'

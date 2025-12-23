@@ -1,0 +1,34 @@
+{
+  "name": "rete-studio-dsl-lang",
+  "version": "0.0.0",
+  "description": "Simple DSL language support for Rete Studio",
+  "main": "dist/rete-studio-dsl-lang.common.js",
+  "module": "dist/rete-studio-dsl-lang.esm.js",
+  "jsdelivr": "dist/rete-studio-dsl-lang.min.js",
+  "unpkg": "dist/rete-studio-dsl-lang.min.js",
+  "types": "dist/_types/index.d.ts",
+  "typings": "dist/_types/index.d.ts",
+  "scripts": {
+    "build": "rete build -c rete.config.ts",
+    "lint": "rete lint"
+  },
+  "author": "Vitaliy Stoliarov",
+  "license": "CC-BY-NC-SA-4.0",
+  "peerDependencies": {
+    "rete": "^2.0.2",
+    "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
+  },
+  "dependencies": {
+    "antlr4ts": "^0.5.0-alpha.4"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "antlr4ts": "^0.5.0-alpha.4",
+    "antlr4ts-cli": "^0.5.0-alpha.4",
+    "rete": "^2.0.3",
+    "rete-area-plugin": "^2.0.4",
+    "rete-cli": "^1.0.3",
+    "rete-structures": "^2.0.1",
+    "rete-studio-core": "file:../../core/rete-studio-core-0.0.0.tgz"
+  }
+}

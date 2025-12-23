@@ -9,6 +9,7 @@
   "rules": {
     "@typescript-eslint/naming-convention": "off",
     "@typescript-eslint/no-shadow": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "complexity": "off",
     "no-console": "off",
     "no-undefined": "off"

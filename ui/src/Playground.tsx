@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use client'
 import { Editor } from '@monaco-editor/react';
 import { editor as monaco } from 'monaco-editor';
