@@ -24,18 +24,18 @@
     "rete-structures": "^2.0.1"
   },
   "peerDependencies": {
-    "styled-components": "^6.0.0",
-    "rete-studio-core": "file:../core/rete-studio-core-0.0.0.tgz"
+    "rete-studio-core": "file:../core/rete-studio-core-0.0.0.tgz",
+    "styled-components": "^6.0.0"
   },
   "devDependencies": {
-    "@types/styled-components": "^5.1.26",
-    "@types/react-dom": "^18.2.7",
     "@babel/preset-react": "^7.22.15",
-    "eslint-plugin-react": "^7.33.2",
     "@rollup/plugin-commonjs": "^25.0.4",
-    "styled-components": "^6.0.7",
-    "rollup-plugin-copy": "^3.5.0",
+    "@types/react-dom": "^18.2.7",
+    "@types/styled-components": "^5.1.26",
+    "eslint-plugin-react": "^7.33.2",
     "rete-cli": "^1.0.3",
-    "rete-studio-core": "file:../core/rete-studio-core-0.0.0.tgz"
+    "rete-studio-core": "file:../core/rete-studio-core-0.0.0.tgz",
+    "rollup-plugin-copy": "^3.5.0",
+    "styled-components": "^6.0.7"
   }
 }
