@@ -24,6 +24,8 @@ Currently, JavaScript is the only supported language. Considering the complexity
 
 ## Getting started
 
+**Requirements**: Node.js version 20 or older.
+
 Before launching the application, make sure to run the following command to install dependencies and build packages
 
 ```bash
